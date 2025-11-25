@@ -1,0 +1,110 @@
+services:
+  # ===================================
+  # PostgreSQL Database
+  # ===================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: tspark-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tspark_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tspark-network
+    restart: unless-stopped
+
+  # ===================================
+  # Node.js Application (Development)
+  # ===================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: tspark-app
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      API_PREFIX: /api
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: tspark_db
+      # JWT Configuration
+      JWT_SECRET: dev-secret-key-change-in-production-please
+      JWT_EXPIRES_IN: 24h
+      # Email Configuration (optional for development)
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_USER: your-email@gmail.com
+      EMAIL_PASSWORD: your-app-password
+      EMAIL_FROM: noreply@tspark.com
+      # Frontend URL
+      FRONTEND_URL: http://localhost:3000
+      # Rate Limiting
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot-reload
+      - ./src:/app/src:delegated
+      - ./package.json:/app/package.json:delegated
+      - ./tsconfig.json:/app/tsconfig.json:delegated
+      - ./nodemon.json:/app/nodemon.json:delegated
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tspark-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # ===================================
+  # pgAdmin (Optional Database UI)
+  # ===================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tspark-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tspark.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 80
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - tspark-network
+    restart: unless-stopped
+    profiles:
+      - tools
+
+volumes:
+  postgres-data:
+    driver: local
+  pgadmin-data:
+    driver: local
+
+networks:
+  tspark-network:
+    driver: bridge

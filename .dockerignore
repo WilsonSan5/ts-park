@@ -1,0 +1,110 @@
+# ===================================
+# Node.js & Dependencies
+# ===================================
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ===================================
+# Build Output
+# ===================================
+dist
+build
+*.tsbuildinfo
+.next
+out
+
+# ===================================
+# Environment Files
+# ===================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# ===================================
+# IDE & Editor
+# ===================================
+.vscode
+.idea
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# ===================================
+# Git
+# ===================================
+.git
+.gitignore
+.gitattributes
+.github
+
+# ===================================
+# Documentation
+# ===================================
+*.md
+docs/
+README.md
+CHANGELOG.md
+LICENSE
+CONTRIBUTING.md
+
+# ===================================
+# Test Files
+# ===================================
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__
+coverage
+.nyc_output
+
+# ===================================
+# Docker
+# ===================================
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# ===================================
+# CI/CD
+# ===================================
+.github
+.gitlab-ci.yml
+.travis.yml
+.circleci
+
+# ===================================
+# Logs
+# ===================================
+logs
+*.log
+
+# ===================================
+# Temporary Files
+# ===================================
+tmp
+temp
+*.tmp
+
+# ===================================
+# Database
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===================================
+# Backups
+# ===================================
+backups/
+*.bak

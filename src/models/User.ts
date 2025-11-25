@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { UserRole, UserStatus } from '../types';
+import { Exercise } from './Exercise';
 
 @Entity('users')
 export class User {
@@ -49,6 +50,6 @@ export class User {
   // @OneToMany(() => Gym, gym => gym.owner)
   // gyms: Gym[];
 
-  // @OneToMany(() => Exercise, exercise => exercise.createdBy)
-  // createdExercises: Exercise[];
+  @OneToMany(() => Exercise, exercise => exercise.createdBy)
+  createdExercises: Exercise[];
 }

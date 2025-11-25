@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as exerciseService from '../services/exercise.service';
-import { sendSuccess, sendError } from '../utils/response';
+import { sendSuccess, sendError, sendCreated } from '../utils/response';
 import { ExerciseDifficulty } from '../models/Exercise';
 
 /**
@@ -37,7 +37,7 @@ export const createExercise = async (
       req.user!.userId
     );
 
-    return sendSuccess(res, 'Exercise created successfully', exercise, 201);
+    return sendCreated(res, 'Exercise created successfully', exercise);
   } catch (error: any) {
     return sendError(res, error.message, 500);
   }

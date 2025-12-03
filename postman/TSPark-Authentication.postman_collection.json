@@ -1,0 +1,678 @@
+{
+	"info": {
+		"_postman_id": "tspark-auth-collection-2024",
+		"name": "TSPark - Phase 2 Authentication",
+		"description": "Complete authentication endpoints for TSPark fitness platform.\n\n## Phase 2 - Core Authentication\n\n### What's Included:\n- ✅ User Registration\n- ✅ User Login (JWT token generation)\n- ✅ Get Current User Profile (protected route)\n- ✅ Error scenarios for testing\n\n### How to Use:\n1. Start your server: `npm run dev`\n2. Run \"Register User\" to create an account\n3. Run \"Login\" to get a JWT token\n4. Token is automatically saved to collection variable\n5. Run \"Get Current User\" to test protected route\n6. Try error scenarios to test validation\n\n### Environment Setup:\nBase URL is set to: http://localhost:3000/api\n\nCreated: 2024-01-19\nPhase: 2 (Core Authentication)\nStatus: ✅ Complete",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test script to validate response",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Response contains user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"    pm.expect(jsonData.data.user).to.have.property('firstName');",
+									"    pm.expect(jsonData.data.user).to.have.property('lastName');",
+									"    pm.expect(jsonData.data.user).to.have.property('role');",
+									"});",
+									"",
+									"pm.test(\"Password is not returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user).to.not.have.property('password');",
+									"});",
+									"",
+									"pm.test(\"User ID is a UUID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;",
+									"    pm.expect(jsonData.data.user.id).to.match(uuidPattern);",
+									"});",
+									"",
+									"// Save user email for login",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.user) {",
+									"    pm.collectionVariables.set(\"user_email\", jsonData.data.user.email);",
+									"    console.log(\"✅ User registered successfully:\", jsonData.data.user.email);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@tspark.com\",\n  \"password\": \"SecurePass123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "**Register a new user account**\n\n### Request Body:\n- `email` (string, required): User's email address\n- `password` (string, required): Password (min 8 characters)\n- `firstName` (string, required): User's first name\n- `lastName` (string, required): User's last name\n- `role` (string, optional): User role - \"client\", \"gym_owner\", or \"super_admin\" (defaults to \"client\")\n\n### Success Response (201):\n```json\n{\n  \"success\": true,\n  \"message\": \"User registered successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"uuid\",\n      \"email\": \"john.doe@tspark.com\",\n      \"firstName\": \"John\",\n      \"lastName\": \"Doe\",\n      \"role\": \"client\",\n      \"status\": \"active\",\n      \"emailVerified\": false,\n      \"totalPoints\": 0,\n      \"createdAt\": \"2024-01-19T...\",\n      \"updatedAt\": \"2024-01-19T...\"\n    }\n  }\n}\n```\n\n### Error Responses:\n- **400**: Missing required fields or invalid format\n- **409**: Email already exists\n- **500**: Server error\n\n### Security:\n- Password is hashed with bcrypt before storage\n- Password is NEVER returned in response"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test script to validate response and save token",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Response contains user and token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data).to.have.property('token');",
+									"});",
+									"",
+									"pm.test(\"Token is a valid JWT format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var jwtPattern = /^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$/;",
+									"    pm.expect(jsonData.data.token).to.match(jwtPattern);",
+									"});",
+									"",
+									"pm.test(\"Password is not returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user).to.not.have.property('password');",
+									"});",
+									"",
+									"// Save token to collection variable for use in protected routes",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"auth_token\", jsonData.data.token);",
+									"    console.log(\"✅ Login successful! Token saved to collection variables.\");",
+									"    console.log(\"🔑 Token:\", jsonData.data.token.substring(0, 20) + \"...\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Authenticate user and get JWT token**\n\n### Request Body:\n- `email` (string, required): User's email address\n- `password` (string, required): User's password\n\n### Success Response (200):\n```json\n{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"uuid\",\n      \"email\": \"john.doe@tspark.com\",\n      \"firstName\": \"John\",\n      \"lastName\": \"Doe\",\n      \"role\": \"client\",\n      \"status\": \"active\",\n      \"totalPoints\": 0,\n      ...\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}\n```\n\n### Error Responses:\n- **400**: Missing email or password\n- **401**: Invalid credentials or inactive account\n- **500**: Server error\n\n### Token Usage:\n- Token expires in 24 hours\n- Use in Authorization header: `Bearer <token>`\n- Token contains: userId, email, role\n\n### What Happens:\n1. Server finds user by email\n2. Compares password with bcrypt hash\n3. Checks account status is \"active\"\n4. Generates signed JWT token\n5. Returns user data + token\n\n### Security:\n- Password is never stored or returned\n- Error messages don't reveal if email exists\n- Token is cryptographically signed"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User (Protected)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test script for protected route",
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"Response contains user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});",
+									"",
+									"pm.test(\"Password is not returned\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user).to.not.have.property('password');",
+									"});",
+									"",
+									"console.log(\"✅ Protected route accessed successfully!\");",
+									"console.log(\"👤 User:\", pm.response.json().data.user.email);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "**Get current authenticated user's profile**\n\n### Authentication:\n**REQUIRED** - This is a protected route\n- Header: `Authorization: Bearer <token>`\n- Token obtained from login endpoint\n\n### Success Response (200):\n```json\n{\n  \"success\": true,\n  \"message\": \"User profile retrieved successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"uuid\",\n      \"email\": \"john.doe@tspark.com\",\n      \"firstName\": \"John\",\n      \"lastName\": \"Doe\",\n      \"role\": \"client\",\n      \"status\": \"active\",\n      \"emailVerified\": false,\n      \"totalPoints\": 0,\n      \"createdAt\": \"2024-01-19T...\",\n      \"updatedAt\": \"2024-01-19T...\"\n    }\n  }\n}\n```\n\n### Error Responses:\n- **401**: No token provided or invalid token format\n- **403**: Token expired or invalid signature\n- **404**: User not found (token valid but user deleted)\n- **500**: Server error\n\n### How It Works:\n1. Client sends request with JWT in Authorization header\n2. `authenticateToken` middleware extracts token\n3. Middleware verifies token signature and expiration\n4. Middleware adds `req.user = { userId, email, role }`\n5. Controller fetches fresh user data from database\n6. Returns complete user profile\n\n### Why Get Fresh Data?\n- Token might be old (issued hours ago)\n- User data might have changed (points, status, etc.)\n- This ensures you have current information\n\n### Token Auto-Used:\nThis request automatically uses the token saved from the Login request."
+					},
+					"response": []
+				}
+			],
+			"description": "Core authentication endpoints for TSPark Phase 2.\n\n### Flow:\n1. Register → Create account\n2. Login → Get JWT token (auto-saved)\n3. Get Current User → Use token for protected route\n\n### All endpoints tested with:\n- Success scenarios\n- Error scenarios\n- Security validation"
+		},
+		{
+			"name": "Error Scenarios",
+			"item": [
+				{
+					"name": "Register - Duplicate Email (409)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409 Conflict\", function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"",
+									"pm.test(\"Response indicates email exists\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('already exists');",
+									"});",
+									"",
+									"console.log(\"✅ Duplicate email correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@tspark.com\",\n  \"password\": \"SecurePass123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "**Test duplicate email registration**\n\nTrying to register with an email that already exists should return 409 Conflict.\n\n### Expected Behavior:\n- Status: 409 Conflict\n- Message: \"User with this email already exists\"\n- No user created in database\n\n### Security Note:\nRevealing that an email exists could be a privacy concern, but for registration it's acceptable as users need to know if they already have an account."
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Missing Fields (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response indicates missing fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('required');",
+									"});",
+									"",
+									"console.log(\"✅ Missing fields correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"incomplete@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "**Test registration with missing required fields**\n\nMissing firstName and lastName should return 400 Bad Request.\n\n### Expected Behavior:\n- Status: 400 Bad Request\n- Message: \"All fields are required (email, password, firstName, lastName)\"\n- No user created\n\n### Validation:\nController validates all required fields are present before calling the service."
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Invalid Email (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response indicates invalid email\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('email');",
+									"});",
+									"",
+									"console.log(\"✅ Invalid email format correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"SecurePass123\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "**Test registration with invalid email format**\n\nEmail without @ symbol should return 400 Bad Request.\n\n### Expected Behavior:\n- Status: 400 Bad Request\n- Message: \"Invalid email format\"\n- No user created\n\n### Validation:\nController uses regex to validate email format:\n```javascript\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Short Password (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response indicates password too short\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('8 characters');",
+									"});",
+									"",
+									"console.log(\"✅ Short password correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@tspark.com\",\n  \"password\": \"short\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "**Test registration with password too short**\n\nPassword less than 8 characters should return 400 Bad Request.\n\n### Expected Behavior:\n- Status: 400 Bad Request\n- Message: \"Password must be at least 8 characters long\"\n- No user created\n\n### Security:\nMinimum password length helps prevent weak passwords and brute force attacks."
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Wrong Password (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response indicates invalid credentials\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('Invalid');",
+									"});",
+									"",
+									"console.log(\"✅ Wrong password correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@tspark.com\",\n  \"password\": \"WrongPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Test login with incorrect password**\n\n### Expected Behavior:\n- Status: 401 Unauthorized\n- Message: \"Invalid email or password\"\n- No token generated\n\n### Security Note:\nWe don't reveal whether the email exists or the password is wrong. This prevents attackers from discovering valid email addresses."
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Non-existent Email (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response indicates invalid credentials\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('Invalid');",
+									"});",
+									"",
+									"console.log(\"✅ Non-existent email correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"nonexistent@tspark.com\",\n  \"password\": \"SomePassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Test login with non-existent email**\n\n### Expected Behavior:\n- Status: 401 Unauthorized\n- Message: \"Invalid email or password\" (same as wrong password)\n- No token generated\n\n### Security:\nSame error message for wrong email and wrong password prevents email enumeration attacks."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User - No Token (401)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401 Unauthorized\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response indicates token required\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('token');",
+									"});",
+									"",
+									"console.log(\"✅ Missing token correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "**Test protected route without authentication token**\n\n### Expected Behavior:\n- Status: 401 Unauthorized\n- Message: \"Access token is required\"\n- Middleware blocks request before reaching controller\n\n### How It Works:\n1. Request arrives without Authorization header\n2. `authenticateToken` middleware checks for header\n3. No header found → sends 401 error\n4. Controller never runs\n\n### Security:\nProtected routes are inaccessible without valid authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User - Invalid Token (403)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403 Forbidden\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Response indicates invalid token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(false);",
+									"    pm.expect(jsonData.message).to.include('Invalid');",
+									"});",
+									"",
+									"console.log(\"✅ Invalid token correctly rejected\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "invalid.token.here",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "**Test protected route with invalid JWT token**\n\n### Expected Behavior:\n- Status: 403 Forbidden\n- Message: \"Invalid or expired token\"\n- Middleware blocks request\n\n### How It Works:\n1. Request arrives with invalid token\n2. `authenticateToken` middleware tries to verify token\n3. `verifyToken()` throws error (invalid signature)\n4. Middleware catches error → sends 403\n5. Controller never runs\n\n### Token Verification:\n- Checks signature matches JWT_SECRET\n- Validates token structure\n- Checks expiration timestamp\n- Ensures token hasn't been tampered with"
+					},
+					"response": []
+				}
+			],
+			"description": "Error scenarios to test validation and security.\n\nEach request tests a specific failure case:\n- Input validation (missing fields, format)\n- Business logic (duplicate email)\n- Authentication (wrong password, invalid token)\n- Authorization (missing token)\n\nAll should return appropriate error codes and messages."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script runs before every request",
+					"console.log('🚀 TSPark API Request: ' + pm.request.method + ' ' + pm.request.url);",
+					"",
+					"// Log if we have an auth token",
+					"const token = pm.collectionVariables.get('auth_token');",
+					"if (token) {",
+					"    console.log('🔑 Using authentication token');",
+					"} else {",
+					"    console.log('📢 No authentication token (public route or not yet logged in)');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Post-request script runs after every request",
+					"console.log('📊 Response Status:', pm.response.code, pm.response.status);",
+					"console.log('⏱️  Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Log response size",
+					"const size = pm.response.responseSize;",
+					"if (size) {",
+					"    console.log('📦 Response Size:', size + ' bytes');",
+					"}",
+					"",
+					"// Pretty print JSON response",
+					"try {",
+					"    const jsonData = pm.response.json();",
+					"    console.log('📄 Response:', JSON.stringify(jsonData, null, 2));",
+					"} catch(e) {",
+					"    console.log('📄 Response is not JSON');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

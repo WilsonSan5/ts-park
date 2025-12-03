@@ -4,8 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config/env';
 
-// TODO: Import routes
-// import routes from './routes';
+import routes from './routes';
 
 const app: Application = express();
 
@@ -20,8 +19,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'TSPark API is running' });
 });
 
-// TODO: API Routes
-// app.use('/api', routes);
+// API Routes
+app.use('/api', routes);
 
 // TODO: Error handling middleware
 // app.use(errorMiddleware);

@@ -1,0 +1,2087 @@
+{
+	"info": {
+		"_postman_id": "tspark-gyms-challenges-ilia-2024",
+		"name": "TSPark - Gyms & Challenges API - Ilia Tests",
+		"description": "Collection de tests pour les endpoints Gyms et Challenges du projet TSPark.\n\n## Fonctionnalités testées :\n\n### 🏋️ Gestion des Salles de Sport\n- ✅ Créer une salle (rôle gym_owner)\n- ✅ Lister les salles approuvées (public)\n- ✅ Détails d'une salle\n- ✅ Modifier une salle (propriétaire ou super_admin)\n- ✅ Approuver une salle (super_admin uniquement)\n\n### 🎯 Gestion des Défis\n- ✅ Créer un défi\n- ✅ Lister les défis\n- ✅ Détails d'un défi\n- ✅ Rejoindre un défi (client)\n- ✅ Quitter un défi (client)\n- ✅ Voir les participations\n\n## Utilisation :\n1. Démarrer le serveur : `npm run dev`\n2. Exécuter les logins pour obtenir les tokens JWT\n3. Tester le workflow complet\n4. Vérifier les scénarios d'erreur\n\nURL de base : http://localhost:3000/api\n\nCréé par : Ilia - Décembre 2024",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Authentification",
+			"item": [
+				{
+					"name": "Register - Utilisateur Normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Inscription réussie\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Utilisateur créé\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});",
+									"",
+									"// Sauvegarder les infos du nouvel utilisateur",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.user) {",
+									"    pm.collectionVariables.set(\"new_user_email\", jsonData.data.user.email);",
+									"    pm.collectionVariables.set(\"new_user_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Utilisateur inscrit:\", jsonData.data.user.email);",
+									"    console.log(\"🆔 ID:\", jsonData.data.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"nouveauclient@tspark.com\",\n  \"password\": \"SecurePass123\",\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Dupont\",\n  \"role\": \"client\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Inscription d'un nouvel utilisateur avec le rôle client"
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Super Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Super Admin créé\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Rôle super_admin assigné\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.role).to.eql('super_admin');",
+									"});",
+									"",
+									"// Sauvegarder les infos du super admin",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.user) {",
+									"    pm.collectionVariables.set(\"new_admin_email\", jsonData.data.user.email);",
+									"    pm.collectionVariables.set(\"new_admin_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Super Admin créé:\", jsonData.data.user.email);",
+									"    console.log(\"🔑 Rôle:\", jsonData.data.user.role);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"nouveauadmin@tspark.com\",\n  \"password\": \"SuperSecurePass123\",\n  \"firstName\": \"Marie\",\n  \"lastName\": \"Martin\",\n  \"role\": \"super_admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Inscription d'un nouveau super administrateur"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Utilisateur Normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Connexion réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Token reçu\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('token');",
+									"});",
+									"",
+									"// Sauvegarder le token utilisateur",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"user_token\", jsonData.data.token);",
+									"    pm.collectionVariables.set(\"user_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Connecté comme:\", jsonData.data.user.email);",
+									"    console.log(\"🔑 Token sauvegardé\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connexion d'un utilisateur standard"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Propriétaire de Salle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Connexion réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Token reçu\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('token');",
+									"});",
+									"",
+									"// Sauvegarder le token",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"gym_owner_token\", jsonData.data.token);",
+									"    pm.collectionVariables.set(\"gym_owner_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Connecté comme:\", jsonData.data.user.email);",
+									"    console.log(\"🔑 Token sauvegardé\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"gym.owner@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connexion avec le rôle gym_owner pour gérer les salles"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Connexion réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"client_token\", jsonData.data.token);",
+									"    pm.collectionVariables.set(\"client_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Connecté comme client:\", jsonData.data.user.email);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connexion avec le rôle client pour participer aux défis"
+					},
+					"response": []
+				},
+				{
+					"name": "Register - Propriétaire de Salle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Inscription gym_owner réussie\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Rôle gym_owner confirmé\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.role).to.eql('gym_owner');",
+									"});",
+									"",
+									"pm.test(\"Email correct\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.email).to.eql('gym.owner@tspark.com');",
+									"});",
+									"",
+									"// Sauvegarder les données pour les tests suivants",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.user) {",
+									"    pm.collectionVariables.set(\"gym_owner_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Propriétaire de salle créé:\", jsonData.data.user.email);",
+									"    console.log(\"🏋️ ID gym_owner:\", jsonData.data.user.id);",
+									"    console.log(\"👤 Nom complet:\", jsonData.data.user.firstName, jsonData.data.user.lastName);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"gym.owner@tspark.com\",\n  \"password\": \"SecurePass123\",\n  \"firstName\": \"Pierre\",\n  \"lastName\": \"Gym Owner\",\n  \"role\": \"gym_owner\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Créer un nouveau propriétaire de salle de sport"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Super Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Connexion Super Admin réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Rôle super_admin confirmé\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.role).to.eql('super_admin');",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"admin_token\", jsonData.data.token);",
+									"    pm.collectionVariables.set(\"admin_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Connecté comme admin:\", jsonData.data.user.email);",
+									"    console.log(\"👑 Privilèges super_admin activés\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@tspark.com\",\n  \"password\": \"AdminSecure123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connexion avec privilèges super administrateur"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profil utilisateur récupéré\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données utilisateur complètes\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"    pm.expect(jsonData.data).to.have.property('firstName');",
+									"    pm.expect(jsonData.data).to.have.property('lastName');",
+									"    pm.expect(jsonData.data).to.have.property('role');",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"console.log(\"👤 Utilisateur actuel:\", jsonData.data.firstName, jsonData.data.lastName);",
+									"console.log(\"📧 Email:\", jsonData.data.email);",
+									"console.log(\"🔑 Rôle:\", jsonData.data.role);",
+									"console.log(\"🎯 Points totaux:\", jsonData.data.totalPoints || 0);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"me"
+							]
+						},
+						"description": "Récupérer les informations de l'utilisateur connecté"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests d'authentification pour obtenir les tokens JWT"
+		},
+		{
+			"name": "🏋️ Salles de Sport",
+			"item": [
+				{
+					"name": "Créer une Nouvelle Salle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Salle créée avec succès\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Données de la salle reçues\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data.status).to.eql('pending');",
+									"});",
+									"",
+									"// Sauvegarder l'ID de la salle",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.collectionVariables.set(\"new_gym_id\", jsonData.data.id);",
+									"    console.log(\"✅ Salle créée avec l'ID:\", jsonData.data.id);",
+									"    console.log(\"📝 Statut:\", jsonData.data.status);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"PowerGym Paris 15\",\n  \"description\": \"Salle de sport moderne avec équipements haut de gamme et coachs professionnels\",\n  \"address\": \"15 Rue de Vaugirard\",\n  \"city\": \"Paris\",\n  \"phone\": \"01.45.67.89.10\",\n  \"email\": \"contact@powergym-paris15.fr\",\n  \"capacity\": 120,\n  \"equipment\": [\"Tapis de course\", \"Vélos elliptiques\", \"Poids libres\", \"Machines guidées\", \"Espace stretching\"],\n  \"specializedExerciseTypes\": [\"cardio\", \"musculation\", \"fitness\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms"
+							]
+						},
+						"description": "Créer une nouvelle salle de sport (nécessite le rôle gym_owner)"
+					},
+					"response": []
+				},
+				{
+					"name": "Lister Toutes les Salles Approuvées",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Liste récupérée\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Réponse est un tableau\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Toutes les salles sont approuvées\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.data.forEach(function(gym) {",
+									"        pm.expect(gym.status).to.eql('approved');",
+									"    });",
+									"});",
+									"",
+									"console.log(\"📋 Nombre de salles approuvées:\", pm.response.json().data.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms"
+							]
+						},
+						"description": "Lister toutes les salles approuvées (endpoint public)"
+					},
+					"response": []
+				},
+				{
+					"name": "Détails d'une Salle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Détails récupérés\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données complètes\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data).to.have.property('description');",
+									"    pm.expect(jsonData.data).to.have.property('equipment');",
+									"});",
+									"",
+									"console.log(\"🏋️ Salle:\", pm.response.json().data.name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gyms/{{new_gym_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms",
+								"{{new_gym_id}}"
+							]
+						},
+						"description": "Obtenir les détails d'une salle spécifique"
+					},
+					"response": []
+				},
+				{
+					"name": "Modifier une Salle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Modification réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données mises à jour\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.description).to.include('MISE À JOUR');",
+									"});",
+									"",
+									"console.log(\"✏️ Salle modifiée:\", pm.response.json().data.name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"MISE À JOUR : Salle de sport moderne avec équipements haut de gamme, coachs professionnels et nouveau studio de yoga !\",\n  \"capacity\": 150,\n  \"equipment\": [\"Tapis de course\", \"Vélos elliptiques\", \"Poids libres\", \"Machines guidées\", \"Espace stretching\", \"Studio yoga\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/gyms/{{new_gym_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms",
+								"{{new_gym_id}}"
+							]
+						},
+						"description": "Modifier les détails d'une salle (propriétaire ou super_admin uniquement)"
+					},
+					"response": []
+				},
+				{
+					"name": "Approuver une Salle (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Approbation réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Statut changé en approuvé\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.eql('approved');",
+									"});",
+									"",
+									"console.log(\"✅ Salle approuvée:\", pm.response.json().data.name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gyms/{{new_gym_id}}/approve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms",
+								"{{new_gym_id}}",
+								"approve"
+							]
+						},
+						"description": "Approuver une salle de sport (super_admin uniquement)"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests pour la gestion des salles de sport"
+		},
+		{
+			"name": "🎯 Défis Sportifs",
+			"item": [
+				{
+					"name": "Créer un Nouveau Défi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Défi créé avec succès\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Données du défi reçues\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('title');",
+									"    pm.expect(jsonData.data).to.have.property('objectives');",
+									"});",
+									"",
+									"// Sauvegarder l'ID du défi",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.collectionVariables.set(\"new_challenge_id\", jsonData.data.id);",
+									"    console.log(\"✅ Défi créé avec l'ID:\", jsonData.data.id);",
+									"    console.log(\"🎯 Titre:\", jsonData.data.title);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Challenge Hiver 2024 - 30 Jours Fitness\",\n  \"description\": \"Relevez le défi de faire 30 séances d'entraînement en 30 jours pour démarrer l'année en forme !\",\n  \"type\": \"individual\",\n  \"difficulty\": \"medium\",\n  \"objectives\": {\n    \"targetWorkouts\": 30,\n    \"targetCalories\": 12000,\n    \"targetDuration\": 1500\n  },\n  \"startDate\": \"2024-12-15T00:00:00.000Z\",\n  \"endDate\": \"2025-01-15T23:59:59.000Z\",\n  \"pointsReward\": 500,\n  \"maxParticipants\": 100,\n  \"isPublic\": true,\n  \"gymId\": \"{{new_gym_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/challenges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges"
+							]
+						},
+						"description": "Créer un nouveau défi sportif"
+					},
+					"response": []
+				},
+				{
+					"name": "Lister Tous les Défis",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Liste récupérée\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Réponse est un tableau\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"console.log(\"📋 Nombre de défis trouvés:\", pm.response.json().data.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges"
+							]
+						},
+						"description": "Lister tous les défis actifs"
+					},
+					"response": []
+				},
+				{
+					"name": "Lister les Défis avec Filtres",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Filtrage fonctionnel\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Défis filtrés correctement\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.data.forEach(function(challenge) {",
+									"        pm.expect(challenge.difficulty).to.eql('medium');",
+									"        pm.expect(challenge.type).to.eql('individual');",
+									"    });",
+									"});",
+									"",
+									"console.log(\"🔍 Défis filtrés:\", pm.response.json().data.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges?difficulty=medium&type=individual",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges"
+							],
+							"query": [
+								{
+									"key": "difficulty",
+									"value": "medium"
+								},
+								{
+									"key": "type",
+									"value": "individual"
+								}
+							]
+						},
+						"description": "Lister les défis avec filtres de difficulté et type"
+					},
+					"response": []
+				},
+				{
+					"name": "Détails d'un Défi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Détails récupérés\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données complètes du défi\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('title');",
+									"    pm.expect(jsonData.data).to.have.property('objectives');",
+									"    pm.expect(jsonData.data).to.have.property('creator');",
+									"});",
+									"",
+									"console.log(\"🎯 Défi:\", pm.response.json().data.title);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges/{{new_challenge_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges",
+								"{{new_challenge_id}}"
+							]
+						},
+						"description": "Obtenir les détails complets d'un défi spécifique"
+					},
+					"response": []
+				},
+				{
+					"name": "Rejoindre un Défi (Client)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Participation créée\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Données de participation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('challengeId');",
+									"    pm.expect(jsonData.data).to.have.property('userId');",
+									"    pm.expect(jsonData.data.status).to.eql('joined');",
+									"});",
+									"",
+									"console.log(\"✅ Participation au défi réussie !\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges/{{new_challenge_id}}/join",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges",
+								"{{new_challenge_id}}",
+								"join"
+							]
+						},
+						"description": "Rejoindre un défi en tant que client"
+					},
+					"response": []
+				},
+				{
+					"name": "Voir les Participants du Défi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Liste des participants\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Au moins un participant\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.data.length).to.be.at.least(1);",
+									"});",
+									"",
+									"console.log(\"👥 Nombre de participants:\", pm.response.json().data.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges/{{new_challenge_id}}/participants",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges",
+								"{{new_challenge_id}}",
+								"participants"
+							]
+						},
+						"description": "Voir la liste des participants d'un défi"
+					},
+					"response": []
+				},
+				{
+					"name": "Mes Participations (Client)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Participations récupérées\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Au moins une participation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.data.length).to.be.at.least(1);",
+									"});",
+									"",
+									"console.log(\"📋 Mes participations:\", pm.response.json().data.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges/participations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges",
+								"participations"
+							]
+						},
+						"description": "Voir toutes les participations de l'utilisateur actuel"
+					},
+					"response": []
+				},
+				{
+					"name": "Quitter un Défi (Client)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Départ réussi\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"console.log(\"❌ Défi quitté avec succès\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges/{{new_challenge_id}}/leave",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges",
+								"{{new_challenge_id}}",
+								"leave"
+							]
+						},
+						"description": "Quitter un défi en cours"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests pour la gestion des défis sportifs"
+		},
+		{
+			"name": "💪 Exercices",
+			"item": [
+				{
+					"name": "Créer un Nouvel Exercice (Super Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Exercice créé avec succès\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Données de l'exercice reçues\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data).to.have.property('difficulty');",
+									"});",
+									"",
+									"// Sauvegarder l'ID de l'exercice",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id) {",
+									"    pm.collectionVariables.set(\"exercise_id\", jsonData.data.id);",
+									"    console.log(\"✅ Exercice créé avec l'ID:\", jsonData.data.id);",
+									"    console.log(\"💪 Nom:\", jsonData.data.name);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pompes Diamant\",\n  \"description\": \"Variation difficile des pompes traditionnelles avec les mains en forme de diamant\",\n  \"muscleGroups\": [\"pectoraux\", \"triceps\", \"épaules\"],\n  \"difficulty\": \"advanced\",\n  \"caloriesPerMinute\": 8.5,\n  \"instructions\": \"Placez vos mains en forme de diamant sous votre poitrine, descendez et remontez en contrôlant le mouvement\",\n  \"videoUrl\": \"https://example.com/pompes-diamant.mp4\",\n  \"imageUrl\": \"https://example.com/pompes-diamant.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/exercises",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises"
+							]
+						},
+						"description": "Créer un nouvel exercice (super_admin uniquement)"
+					},
+					"response": []
+				},
+				{
+					"name": "Lister Tous les Exercices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Liste récupérée\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Réponse est un objet avec exercices\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('exercises');",
+									"    pm.expect(jsonData.data.exercises).to.be.an('array');",
+									"});",
+									"",
+									"console.log(\"📋 Nombre d'exercices trouvés:\", pm.response.json().data.exercises.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/exercises",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises"
+							]
+						},
+						"description": "Lister tous les exercices disponibles"
+					},
+					"response": []
+				},
+				{
+					"name": "Lister Exercices avec Filtres",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Filtrage fonctionnel\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Exercices filtrés correctement\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.data.exercises.forEach(function(exercise) {",
+									"        pm.expect(exercise.difficulty).to.eql('advanced');",
+									"    });",
+									"});",
+									"",
+									"console.log(\"🔍 Exercices filtrés:\", pm.response.json().data.exercises.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/exercises?difficulty=advanced&muscleGroup=pectoraux",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises"
+							],
+							"query": [
+								{
+									"key": "difficulty",
+									"value": "advanced"
+								},
+								{
+									"key": "muscleGroup",
+									"value": "pectoraux"
+								}
+							]
+						},
+						"description": "Lister les exercices avec filtres de difficulté et groupe musculaire"
+					},
+					"response": []
+				},
+				{
+					"name": "Rechercher Exercices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Recherche fonctionnelle\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Résultats de recherche\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('exercises');",
+									"});",
+									"",
+									"console.log(\"🔍 Résultats de recherche:\", pm.response.json().data.exercises.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/exercises/search?q=pompes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "pompes"
+								}
+							]
+						},
+						"description": "Rechercher des exercices par nom ou description"
+					},
+					"response": []
+				},
+				{
+					"name": "Détails d'un Exercice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Détails récupérés\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données complètes de l'exercice\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data).to.have.property('instructions');",
+									"    pm.expect(jsonData.data).to.have.property('createdBy');",
+									"});",
+									"",
+									"console.log(\"💪 Exercice:\", pm.response.json().data.name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/exercises/{{exercise_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises",
+								"{{exercise_id}}"
+							]
+						},
+						"description": "Obtenir les détails complets d'un exercice spécifique"
+					},
+					"response": []
+				},
+				{
+					"name": "Modifier un Exercice (Super Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Modification réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Exercice modifié\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.description).to.include('MISE À JOUR');",
+									"});",
+									"",
+									"console.log(\"✏️ Exercice modifié:\", pm.response.json().data.name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"description\": \"MISE À JOUR : Variation très difficile des pompes traditionnelles avec les mains en forme de diamant, excellent pour les triceps\",\n  \"caloriesPerMinute\": 9.0,\n  \"instructions\": \"Placez vos mains en forme de diamant sous votre poitrine, descendez lentement et remontez en contrôlant parfaitement le mouvement. Gardez le corps bien droit.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/exercises/{{exercise_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises",
+								"{{exercise_id}}"
+							]
+						},
+						"description": "Modifier un exercice existant (super_admin uniquement)"
+					},
+					"response": []
+				},
+				{
+					"name": "Supprimer un Exercice (Super Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Suppression réussie\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"🗑️ Exercice supprimé avec succès\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/exercises/{{exercise_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"exercises",
+								"{{exercise_id}}"
+							]
+						},
+						"description": "Supprimer un exercice (super_admin uniquement)"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests pour la gestion des exercices sportifs"
+		},
+		{
+			"name": "👥 Gestion des Utilisateurs",
+			"item": [
+				{
+					"name": "Lister Tous les Utilisateurs (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Liste utilisateurs récupérée\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Réponse contient la liste des utilisateurs\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('users');",
+									"    pm.expect(jsonData.data.users).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Pas de mots de passe dans la réponse\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.data.users.forEach(user => {",
+									"        pm.expect(user).to.not.have.property('password');",
+									"    });",
+									"});",
+									"",
+									"console.log(\"👥 Utilisateurs listés:\", pm.response.json().data.users.length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Lister tous les utilisateurs (super_admin uniquement)"
+					},
+					"response": []
+				},
+				{
+					"name": "Voir Profil Utilisateur par ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profil récupéré\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données utilisateur complètes\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});",
+									"",
+									"pm.test(\"Pas de mot de passe\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user).to.not.have.property('password');",
+									"});",
+									"",
+									"console.log(\"👤 Profil utilisateur récupéré\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{gym_owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{gym_owner_id}}"
+							]
+						},
+						"description": "Voir son propre profil ou celui d'un autre utilisateur (admin)"
+					},
+					"response": []
+				},
+				{
+					"name": "Modifier Profil Utilisateur",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Profil modifié\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Changements appliqués\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.firstName).to.eql('Pierre');",
+									"});",
+									"",
+									"console.log(\"✏️ Profil modifié:\", pm.response.json().data.user.firstName, pm.response.json().data.user.lastName);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Pierre\",\n  \"lastName\": \"Martin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{gym_owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{gym_owner_id}}"
+							]
+						},
+						"description": "Modifier son propre profil ou celui d'un autre utilisateur (admin)"
+					},
+					"response": []
+				},
+				{
+					"name": "Modifier Email Utilisateur",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Email modifié\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Nouvel email appliqué\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.user.email).to.eql('pierre.martin@tspark.com');",
+									"});",
+									"",
+									"console.log(\"📧 Email modifié:\", pm.response.json().data.user.email);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"pierre.martin@tspark.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{gym_owner_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{gym_owner_id}}"
+							]
+						},
+						"description": "Modifier l'email d'un utilisateur"
+					},
+					"response": []
+				},
+				{
+					"name": "Changer Mot de Passe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Mot de passe changé\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Message de confirmation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.message).to.include('Password changed');",
+									"});",
+									"",
+									"console.log(\"🔒 Mot de passe changé avec succès\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"SecurePass123\",\n  \"newPassword\": \"NewSecurePassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{{client_id}}/password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{client_id}}",
+								"password"
+							]
+						},
+						"description": "Changer son mot de passe (utilisateur connecté uniquement)"
+					},
+					"response": []
+				},
+				{
+					"name": "Voir Statistiques Utilisateur",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Statistiques récupérées\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Données statistiques présentes\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('totalPoints');",
+									"    pm.expect(jsonData.data).to.have.property('memberSince');",
+									"});",
+									"",
+									"var stats = pm.response.json().data;",
+									"console.log(\"📊 Statistiques:\");",
+									"console.log(\"🎯 Points totaux:\", stats.totalPoints);",
+									"console.log(\"📅 Membre depuis:\", stats.memberSince);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{client_id}}/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{client_id}}",
+								"stats"
+							]
+						},
+						"description": "Voir ses propres statistiques ou celles d'un autre utilisateur (admin)"
+					},
+					"response": []
+				},
+				{
+					"name": "Supprimer Utilisateur (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Utilisateur supprimé\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Message de confirmation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.eql(true);",
+									"    pm.expect(jsonData.message).to.include('deleted');",
+									"});",
+									"",
+									"console.log(\"🗑️ Utilisateur supprimé (soft delete)\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{new_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{{new_user_id}}"
+							]
+						},
+						"description": "Supprimer un utilisateur (super_admin uniquement) - Soft delete"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests pour la gestion des profils utilisateurs"
+		},
+		{
+			"name": "❌ Tests d'Erreurs",
+			"item": [
+				{
+					"name": "Créer Salle - Non Autorisé",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Rejet correct\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"console.log(\"✅ Requête non autorisée correctement rejetée\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Salle Sans Auth\",\n  \"description\": \"Ceci devrait échouer\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/gyms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms"
+							]
+						},
+						"description": "Tentative de création de salle sans authentification"
+					},
+					"response": []
+				},
+				{
+					"name": "Rejoindre Défi Inexistant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Erreur 404 correcte\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"console.log(\"✅ Défi inexistant correctement géré\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/challenges/id-inexistant/join",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges",
+								"id-inexistant",
+								"join"
+							]
+						},
+						"description": "Tentative de rejoindre un défi qui n'existe pas"
+					},
+					"response": []
+				},
+				{
+					"name": "Approuver Salle - Mauvais Rôle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Accès refusé\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"console.log(\"✅ Contrôle des rôles fonctionnel\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/gyms/{{new_gym_id}}/approve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gyms",
+								"{{new_gym_id}}",
+								"approve"
+							]
+						},
+						"description": "Tentative d'approbation avec un rôle client (devrait échouer)"
+					},
+					"response": []
+				},
+				{
+					"name": "Données Invalides - Création Défi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Validation des données\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"console.log(\"✅ Validation des données fonctionnelle\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{gym_owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"\",\n  \"description\": \"Défi sans titre\",\n  \"startDate\": \"2023-01-01\",\n  \"endDate\": \"2022-12-31\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/challenges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"challenges"
+							]
+						},
+						"description": "Créer un défi avec des données invalides"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests des scénarios d'erreur et de validation"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string",
+			"description": "URL de base de l'API TSPark"
+		},
+		{
+			"key": "user_token",
+			"value": "",
+			"type": "string",
+			"description": "Token JWT pour l'utilisateur standard"
+		},
+		{
+			"key": "new_user_email",
+			"value": "",
+			"type": "string",
+			"description": "Email du nouvel utilisateur créé"
+		},
+		{
+			"key": "new_user_id",
+			"value": "",
+			"type": "string",
+			"description": "ID du nouvel utilisateur créé"
+		},
+		{
+			"key": "new_admin_email",
+			"value": "",
+			"type": "string",
+			"description": "Email du nouveau super admin créé"
+		},
+		{
+			"key": "new_admin_id",
+			"value": "",
+			"type": "string",
+			"description": "ID du nouveau super admin créé"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de l'utilisateur standard connecté"
+		},
+		{
+			"key": "gym_owner_token",
+			"value": "",
+			"type": "string",
+			"description": "Token JWT pour le propriétaire de salle"
+		},
+		{
+			"key": "client_token",
+			"value": "",
+			"type": "string",
+			"description": "Token JWT pour le client"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string",
+			"description": "Token JWT pour le super admin"
+		},
+		{
+			"key": "gym_owner_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de l'utilisateur propriétaire"
+		},
+		{
+			"key": "client_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de l'utilisateur client"
+		},
+		{
+			"key": "admin_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de l'utilisateur admin"
+		},
+		{
+			"key": "new_gym_id",
+			"value": "",
+			"type": "string",
+			"description": "ID de la nouvelle salle créée"
+		},
+		{
+			"key": "new_challenge_id",
+			"value": "",
+			"type": "string",
+			"description": "ID du nouveau défi créé"
+		}
+	]
+}

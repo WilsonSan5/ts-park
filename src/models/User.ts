@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { UserRole, UserStatus } from '../types';
 import { Exercise } from './Exercise';
+import { Gym } from './Gym';
 
 @Entity('users')
 export class User {
@@ -47,8 +48,8 @@ export class User {
   updatedAt: Date;
 
   // Relations will be added as we build other models
-  // @OneToMany(() => Gym, gym => gym.owner)
-  // gyms: Gym[];
+  @OneToMany(() => Gym, gym => gym.owner)
+  gyms: Gym[];
 
   @OneToMany(() => Exercise, exercise => exercise.createdBy)
   createdExercises: Exercise[];

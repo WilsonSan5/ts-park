@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { GymStatus } from '../types';
 import { User } from './User';
+import { Challenge } from './Challenge';
 
 @Entity('gyms')
 export class Gym {
@@ -50,4 +51,7 @@ export class Gym {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'ownerId' })
   owner: User;
+
+  @OneToMany(() => Challenge, (challenge) => challenge.gym)
+  challenges: Challenge[];
 }

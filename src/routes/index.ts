@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import exerciseRoutes from './exercise.routes';
+import workoutRoutes from './workout.routes';
 // Import other routes as they are implemented
 // import gymRoutes from './gym.routes';
 // import challengeRoutes from './challenge.routes';
@@ -72,18 +73,13 @@ router.use('/users', userRoutes);
 
 // ✅ EXERCISE ROUTES (Phase 6 - Already completed)
 router.use('/exercises', exerciseRoutes);
-// Endpoints available:
-// - POST   /api/exercises (Super Admin only)
-// - GET    /api/exercises
-// - GET    /api/exercises/search?q=query
-// - GET    /api/exercises/:id
-// - PATCH  /api/exercises/:id (Super Admin only)
-// - DELETE /api/exercises/:id (Super Admin only)
+
+// ✅ WORKOUT ROUTES
+router.use('/workouts', workoutRoutes);
 
 // Register other routes as they are implemented
 // router.use('/gyms', gymRoutes);
 // router.use('/challenges', challengeRoutes);
-// router.use('/workouts', workoutRoutes);
 // router.use('/badges', badgeRoutes);
 // router.use('/social', socialRoutes);
 

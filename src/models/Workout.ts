@@ -7,24 +7,27 @@ export class Workout {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'timestamp' })
-  date: Date;
+  @Column()
+  name: string; // e.g., 'running', 'cycling', etc.
+
+  @Column({ type: 'timestamp', nullable: true })
+  completionDate: Date;
 
   @Column()
   duration: number; // in minutes
 
   @Column()
-  caloriesBurned: number;
+  difficulty: string; // e.g., 'easy', 'medium', 'hard'
 
-  @Column({ type: 'text', nullable: true })
-  notes?: string;
+  @Column()
+  caloriesBurned: number;
 
   @CreateDateColumn()
   createdAt: Date;
 
   // Relations
   @Column()
-  userId: string;
+  userId: number;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })

@@ -80,6 +80,17 @@ export interface ChallengeProgress {
   completionPercentage: number;
 }
 
+export interface Workout {
+  name: string;
+  description: string;
+  difficulty: string;
+  duration: number;
+  caloriesBurned: number;
+  exercises: Array<number>;
+  createdAt: Date;
+  userId: number
+}
+
 // Extend Express Request to include user
 declare global {
   namespace Express {

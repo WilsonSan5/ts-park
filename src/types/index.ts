@@ -88,7 +88,7 @@ export interface Workout {
   caloriesBurned: number;
   exercises: Array<number>;
   createdAt: Date;
-  userId: number
+  userId: string;
 }
 
 // Extend Express Request to include user

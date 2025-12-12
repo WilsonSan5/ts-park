@@ -10,4 +10,10 @@ export class WorkoutService {
     console.log('Workout created:', responses);
     return responses; // Return the created workout data
   }
+
+  public async getAllWorkouts() {
+    const workoutRepository = AppDataSource.getRepository(WorkoutModel);
+    const workouts = await workoutRepository.find();
+    return workouts;
+  }
 }

@@ -27,7 +27,7 @@ export class Workout {
 
   // Relations
   @Column()
-  userId: number;
+  userId: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })

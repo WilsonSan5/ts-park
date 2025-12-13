@@ -1,0 +1,46 @@
+meta {
+  name: Get User by ID (Own Profile)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/users/{{user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+script:post-response {
+  test("Status code is 200 OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains user", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('user');
+  });
+  
+  test("Password not returned", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.user).to.not.have.property('password');
+  });
+  
+  console.log("✅ User profile retrieved");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Get user profile by ID**
+  
+  **Authorization:**
+  - Users can view their own profile
+  - Super Admins can view any profile
+  - Returns 403 if trying to view other user's profile
+}

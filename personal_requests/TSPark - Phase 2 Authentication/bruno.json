@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "TSPark - Phase 2 Authentication",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

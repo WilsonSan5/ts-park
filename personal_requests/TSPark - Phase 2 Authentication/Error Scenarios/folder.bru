@@ -1,0 +1,20 @@
+meta {
+  name: Error Scenarios
+  seq: 2
+}
+
+auth {
+  mode: inherit
+}
+
+docs {
+  Error scenarios to test validation and security.
+  
+  Each request tests a specific failure case:
+  - Input validation (missing fields, format)
+  - Business logic (duplicate email)
+  - Authentication (wrong password, invalid token)
+  - Authorization (missing token)
+  
+  All should return appropriate error codes and messages.
+}

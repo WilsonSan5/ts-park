@@ -1,0 +1,46 @@
+meta {
+  name: Register - Duplicate Email (409)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "john.doe@tspark.com",
+    "password": "SecurePass123",
+    "firstName": "John",
+    "lastName": "Doe"
+  }
+}
+
+script:post-response {
+  test("Status code is 409 Conflict", function () {
+      expect(res.getStatus()).to.equal(409);
+  });
+  
+  test("Error message about duplicate email", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.success).to.eql(false);
+      expect(jsonData.message).to.include('already exists');
+  });
+  
+  console.log("✅ Duplicate email correctly rejected");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Test duplicate email registration
+}

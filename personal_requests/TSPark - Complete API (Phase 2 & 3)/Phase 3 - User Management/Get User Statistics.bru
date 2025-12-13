@@ -1,0 +1,45 @@
+meta {
+  name: Get User Statistics
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/users/{{user_id}}/stats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+script:post-response {
+  test("Status code is 200 OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains stats", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('totalPoints');
+      expect(jsonData.data).to.have.property('memberSince');
+  });
+  
+  console.log("✅ User stats:", JSON.stringify(res.getBody().data, null, 2));
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Get user statistics**
+  
+  Returns:
+  - totalPoints: User's total points
+  - memberSince: Account creation date
+  
+  **Authorization:**
+  - Users can view their own stats
+  - Super Admins can view any user's stats
+}

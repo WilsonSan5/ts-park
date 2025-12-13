@@ -1,0 +1,73 @@
+meta {
+  name: TSPark - Phase 2 Authentication
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  base_url: http://localhost:3000/api
+  auth_token: 
+  user_email: 
+}
+
+script:pre-request {
+  // Pre-request script runs before every request
+  console.log('🚀 TSPark API Request: ' + req.getMethod() + ' ' + req.getUrl());
+  
+  // Log if we have an auth token
+  const token = bru.getVar('auth_token');
+  if (token) {
+      console.log('🔑 Using authentication token');
+  } else {
+      console.log('📢 No authentication token (public route or not yet logged in)');
+  }
+}
+
+script:post-response {
+  // Post-request script runs after every request
+  console.log('📊 Response Status:', res.getStatus(), res.statusText);
+  console.log('⏱️  Response Time:', res.getResponseTime() + 'ms');
+  
+  // Log response size
+  const size = res.getSize().body;
+  if (size) {
+      console.log('📦 Response Size:', size + ' bytes');
+  }
+  
+  // Pretty print JSON response
+  try {
+      const jsonData = res.getBody();
+      console.log('📄 Response:', JSON.stringify(jsonData, null, 2));
+  } catch(e) {
+      console.log('📄 Response is not JSON');
+  }
+}
+
+docs {
+  Complete authentication endpoints for TSPark fitness platform.
+  
+  ## Phase 2 - Core Authentication
+  
+  ### What's Included:
+  - ✅ User Registration
+  - ✅ User Login (JWT token generation)
+  - ✅ Get Current User Profile (protected route)
+  - ✅ Error scenarios for testing
+  
+  ### How to Use:
+  1. Start your server: `npm run dev`
+  2. Run "Register User" to create an account
+  3. Run "Login" to get a JWT token
+  4. Token is automatically saved to collection variable
+  5. Run "Get Current User" to test protected route
+  6. Try error scenarios to test validation
+  
+  ### Environment Setup:
+  Base URL is set to: http://localhost:3000/api
+  
+  Created: 2024-01-19
+  Phase: 2 (Core Authentication)
+  Status: ✅ Complete
+}

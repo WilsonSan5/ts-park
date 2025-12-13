@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "TSPark - Complete API (Phase 2 & 3)",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

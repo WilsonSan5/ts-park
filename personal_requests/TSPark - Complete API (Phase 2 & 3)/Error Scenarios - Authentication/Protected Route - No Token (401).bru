@@ -1,0 +1,23 @@
+meta {
+  name: Protected Route - No Token (401)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/auth/me
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is 401 Unauthorized", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+  
+  console.log("✅ Missing token rejected");
+}
+
+settings {
+  encodeUrl: true
+}

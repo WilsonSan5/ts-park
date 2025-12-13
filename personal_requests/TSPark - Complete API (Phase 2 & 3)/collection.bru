@@ -1,0 +1,70 @@
+meta {
+  name: TSPark - Complete API (Phase 2 & 3)
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  base_url: http://localhost:3000/api
+  auth_token: 
+  admin_token: 
+  user_id: 
+  user_email: 
+  admin_email: 
+}
+
+script:pre-request {
+  console.log('🚀 Request:', req.getMethod(), req.getUrl().toString());
+  
+  const token = bru.getVar('auth_token');
+  const adminToken = bru.getVar('admin_token');
+  if (token || adminToken) {
+      console.log('🔑 Using authentication token');
+  }
+}
+
+script:post-response {
+  console.log('📊 Status:', res.getStatus(), res.statusText);
+  console.log('⏱️  Time:', res.getResponseTime() + 'ms');
+  
+  try {
+      const jsonData = res.getBody();
+      console.log('📄 Response:', JSON.stringify(jsonData, null, 2));
+  } catch(e) {
+      console.log('📄 Non-JSON response');
+  }
+}
+
+docs {
+  Complete API endpoints for TSPark fitness platform.
+  
+  ## Phase 2 - Core Authentication ✅
+  - User Registration
+  - User Login (JWT token generation)
+  - Get Current User Profile (protected route)
+  - Error scenarios for testing
+  
+  ## Phase 3 - User Management ✅
+  - List All Users (Super Admin only)
+  - Get User Profile (own or Super Admin)
+  - Update User Profile (own or Super Admin)
+  - Change Password (own only)
+  - Delete User (Super Admin only)
+  - Get User Statistics (own or Super Admin)
+  
+  ## How to Use:
+  1. Start your server: `npm run dev`
+  2. Run "Register User" to create an account
+  3. Run "Login" to get a JWT token (auto-saved)
+  4. Run user management endpoints with saved token
+  5. Try error scenarios to test authorization
+  
+  ## Environment Setup:
+  Base URL: http://localhost:3000/api
+  
+  Created: 2024-01-19
+  Updated: 2024-01-19 (Phase 3 added)
+  Status: ✅ Complete
+}

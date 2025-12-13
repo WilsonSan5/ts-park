@@ -1,0 +1,47 @@
+meta {
+  name: Register Super Admin
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "admin@tspark.com",
+    "password": "AdminSecure123",
+    "firstName": "Admin",
+    "lastName": "User",
+    "role": "super_admin"
+  }
+}
+
+script:post-response {
+  test("Status code is 201 Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  var jsonData = res.getBody();
+  if (jsonData.data && jsonData.data.user) {
+      bru.setVar("admin_email", jsonData.data.user.email);
+      console.log("✅ Super Admin registered:", jsonData.data.user.email);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Register a Super Admin account**
+  
+  Used for testing admin-only endpoints.
+}

@@ -1,0 +1,56 @@
+meta {
+  name: Update User Profile (Own)
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/users/{{user_id}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+body:json {
+  {
+    "firstName": "Jonathan",
+    "lastName": "Doe"
+  }
+}
+
+script:post-response {
+  test("Status code is 200 OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("User updated successfully", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.user.firstName).to.eql('Jonathan');
+  });
+  
+  console.log("✅ Profile updated successfully");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Update user profile**
+  
+  **Fields:**
+  - firstName (optional)
+  - lastName (optional)
+  - email (optional) - must be unique
+  
+  **Authorization:**
+  - Users can update their own profile
+  - Super Admins can update any profile
+}

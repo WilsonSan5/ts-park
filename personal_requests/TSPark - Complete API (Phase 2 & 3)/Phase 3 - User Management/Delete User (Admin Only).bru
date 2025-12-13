@@ -1,0 +1,45 @@
+meta {
+  name: Delete User (Admin Only)
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{base_url}}/users/{{user_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{admin_token}}
+}
+
+script:post-response {
+  test("Status code is 200 OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("User deleted successfully", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.success).to.eql(true);
+      expect(jsonData.message).to.include('deleted');
+  });
+  
+  console.log("✅ User deleted (soft delete - status set to SUSPENDED)");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Delete user (Super Admin only)**
+  
+  **Implementation:**
+  - Soft delete: sets status to SUSPENDED
+  - User cannot login after deletion
+  - Data preserved for audit trail
+  
+  **Authorization:**
+  - Only Super Admin can delete users
+}

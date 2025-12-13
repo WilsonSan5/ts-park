@@ -1,0 +1,38 @@
+meta {
+  name: List Users - Not Admin (403)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{auth_token}}
+}
+
+script:post-response {
+  test("Status code is 403 Forbidden", function () {
+      expect(res.getStatus()).to.equal(403);
+  });
+  
+  test("Insufficient permissions message", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.success).to.eql(false);
+  });
+  
+  console.log("✅ Non-admin correctly blocked from listing users");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Test non-admin trying to list all users**
+  
+  Expected: 403 Forbidden
+}

@@ -7,7 +7,6 @@ export class WorkoutService {
     const workoutRepository = AppDataSource.getRepository(WorkoutModel);
     const workout = workoutRepository.create(workoutData);
     const responses = await workoutRepository.save(workout);
-    console.log('Workout created:', responses);
     return responses; // Return the created workout data
   }
 

@@ -15,7 +15,7 @@ params:query {
 }
 
 headers {
-  Authorization: Bearer {{client_token}}
+  Authorization: Bearer {{gym_owner_token}}
 }
 
 script:post-response {
@@ -33,6 +33,7 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
 
 docs {

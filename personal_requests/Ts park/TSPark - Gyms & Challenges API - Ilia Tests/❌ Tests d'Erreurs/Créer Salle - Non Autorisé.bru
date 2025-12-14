@@ -12,6 +12,7 @@ post {
 
 headers {
   Content-Type: application/json
+  Authorization: Bearer {{gym_owner_token}}
 }
 
 body:json {
@@ -31,6 +32,7 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
 
 docs {

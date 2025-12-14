@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, ManyToMany } from 'typeorm';
 import { User } from './User';
-import { Participation } from './Participation';
+import { Exercise } from './Exercise';
+import { WorkoutExercise } from 'types/index';
 
 @Entity('workouts')
 export class Workout {
@@ -8,35 +9,27 @@ export class Workout {
   id: string;
 
   @Column()
-  name: string; // e.g., 'running', 'cycling', etc.
+  name: string;
 
-  @Column({ type: 'timestamp', nullable: true })
-  completionDate: Date;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
   @Column()
   duration: number; // in minutes
 
   @Column()
-  difficulty: string; // e.g., 'easy', 'medium', 'hard'
-
-  @Column()
   caloriesBurned: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn() // Date de la séance
   createdAt: Date;
 
   // Relations
-  @Column()
-  userId: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column({ nullable: true })
-  participationId?: string;
+  @ManyToMany(() => Exercise)
+  exercises: WorkoutExercise[];
 
-  @ManyToOne(() => Participation, { nullable: true })
-  @JoinColumn({ name: 'participationId' })
-  participation?: Participation;
 }

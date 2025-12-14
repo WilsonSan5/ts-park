@@ -11,6 +11,13 @@ export class ChallengeController {
         this.challengeService = challengeService;
     }
 
+    buildRouter(): Router {
+        const router = Router();
+        router.post('/', this.createChallenge.bind(this));
+        router.get('/', this.getAllChallenges.bind(this));
+        return router;
+    }
+    
     async createChallenge(req: Request, res: Response) {
         try {
             const { title, description, difficulty, duration, reward, userId, startDate, endDate, type, status, objectives, pointsReward, isPublic, recommendedExercises } = req.body;
@@ -49,10 +56,5 @@ export class ChallengeController {
         }
     }
 
-    buildRouter(): Router {
-        const router = Router();
-        router.post('/', this.createChallenge.bind(this));
-        router.get('/', this.getAllChallenges.bind(this));
-        return router;
-    }
+
 }

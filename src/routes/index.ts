@@ -2,10 +2,10 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import exerciseRoutes from './exercise.routes';
+import gymRoutes from './gym.routes';
+import challengeRoutes from './challenge.routes';
 import workoutRoutes from './workout.routes';
 // Import other routes as they are implemented
-// import gymRoutes from './gym.routes';
-// import challengeRoutes from './challenge.routes';
 // import workoutRoutes from './workout.routes';
 // import badgeRoutes from './badge.routes';
 // import socialRoutes from './social.routes';
@@ -78,6 +78,9 @@ router.use('/exercises', exerciseRoutes);
 router.use('/workouts', workoutRoutes);
 
 // Register other routes as they are implemented
+router.use('/gyms', gymRoutes);
+router.use('/challenges', challengeRoutes);
+// router.use('/workouts', workoutRoutes);
 // router.use('/gyms', gymRoutes);
 // router.use('/challenges', challengeRoutes);
 // router.use('/badges', badgeRoutes);

@@ -21,12 +21,12 @@ export class Workout {
 
   @CreateDateColumn() // Date de la séance
   createdAt: Date;
-  
+
   // Relations
-  
-    @Column() 
-    userId: string;
-  
+
+  @Column()
+  userId: string;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
   user: User;

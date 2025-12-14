@@ -1,0 +1,38 @@
+meta {
+  name: Rejoindre un Défi (Client)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/challenges/{{new_challenge_id}}/join
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{client_token}}
+}
+
+script:post-response {
+  test("Participation créée", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Données de participation", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('challengeId');
+      expect(jsonData.data).to.have.property('userId');
+      expect(jsonData.data.status).to.eql('joined');
+  });
+  
+  console.log("✅ Participation au défi réussie !");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Rejoindre un défi en tant que client
+}

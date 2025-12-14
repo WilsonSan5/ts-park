@@ -1,0 +1,36 @@
+meta {
+  name: Lister Tous les Défis
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/challenges
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{gym_owner_token}}
+}
+
+script:post-response {
+  test("Liste récupérée", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Réponse est un tableau", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.be.an('array');
+  });
+  
+  console.log("📋 Nombre de défis trouvés:", res.getBody().data.length);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Lister tous les défis actifs
+}

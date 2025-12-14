@@ -1,0 +1,41 @@
+meta {
+  name: Create Workout
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/workouts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwODhmNmZlMS00ODJkLTRjM2YtOTVmMS1mODQ3ZTQxYTZjN2YiLCJlbWFpbCI6ImpvaG4uZG9lQHRzcGFyay5jb20iLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNzY1NzM4NjExLCJleHAiOjE3NjU4MjUwMTF9.v4AVNWX7KzyA8FkVp1lBn1ZUyRFOzdkKNlXiaEZGgMM
+}
+
+body:json {
+  {
+    "name": "Pecs, épaule, triceps",
+    "description": "À faire 2 fois par semaine pour muscler le haut du corps.",
+    "duration": 70,
+    "exercices": [
+      {
+        "exerciseIds": 0,
+        "repetitions": 8,
+        "sets": 3,
+        "restPeriods": 90,
+        "weight": 18
+      }
+    ]
+  }
+}
+
+vars:pre-request {
+  user_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwODhmNmZlMS00ODJkLTRjM2YtOTVmMS1mODQ3ZTQxYTZjN2YiLCJlbWFpbCI6ImpvaG4uZG9lQHRzcGFyay5jb20iLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNzY1NzM4NjExLCJleHAiOjE3NjU4MjUwMTF9.v4AVNWX7KzyA8FkVp1lBn1ZUyRFOzdkKNlXiaEZGgMM"
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

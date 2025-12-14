@@ -1,0 +1,39 @@
+meta {
+  name: Détails d'un Défi
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/challenges/{{new_challenge_id}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{gym_owner_token}}
+}
+
+script:post-response {
+  test("Détails récupérés", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Données complètes du défi", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('id');
+      expect(jsonData.data).to.have.property('title');
+      expect(jsonData.data).to.have.property('objectives');
+      expect(jsonData.data).to.have.property('creator');
+  });
+  
+  console.log("🎯 Défi:", res.getBody().data.title);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Obtenir les détails complets d'un défi spécifique
+}

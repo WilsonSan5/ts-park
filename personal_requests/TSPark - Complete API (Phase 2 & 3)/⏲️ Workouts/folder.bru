@@ -1,0 +1,15 @@
+meta {
+  name: ⏲️ Workouts
+}
+
+headers {
+  Authorization: Bearer{{user_token}}
+}
+
+auth {
+  mode: inherit
+}
+
+vars:pre-request {
+  user_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwODhmNmZlMS00ODJkLTRjM2YtOTVmMS1mODQ3ZTQxYTZjN2YiLCJlbWFpbCI6ImpvaG4uZG9lQHRzcGFyay5jb20iLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNzY1NzM4NjExLCJleHAiOjE3NjU4MjUwMTF9.v4AVNWX7KzyA8FkVp1lBn1ZUyRFOzdkKNlXiaEZGgMM"
+}

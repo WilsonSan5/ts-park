@@ -1,0 +1,40 @@
+meta {
+  name: Rechercher Exercices
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/exercises/search?q=pompes
+  body: none
+  auth: inherit
+}
+
+params:query {
+  q: pompes
+}
+
+headers {
+  Authorization: Bearer {{client_token}}
+}
+
+script:post-response {
+  test("Recherche fonctionnelle", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Résultats de recherche", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('exercises');
+  });
+  
+  console.log("🔍 Résultats de recherche:", res.getBody().data.exercises.length);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Rechercher des exercices par nom ou description
+}

@@ -21,6 +21,7 @@ export class WorkoutController {
   }
 
   async createWorkout(req: Request, res: Response) {
+
     try {
       const { name, description, duration, exercises } = req.body;
       const userId = req.user!.userId;

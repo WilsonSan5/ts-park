@@ -24,8 +24,18 @@ body:json {
     "phone": "01.45.67.89.10",
     "email": "contact@powergym-paris15.fr",
     "capacity": 120,
-    "equipment": ["Tapis de course", "Vélos elliptiques", "Poids libres", "Machines guidées", "Espace stretching"],
-    "specializedExerciseTypes": ["cardio", "musculation", "fitness"]
+    "equipment": [
+      "Tapis de course",
+      "Vélos elliptiques",
+      "Poids libres",
+      "Machines guidées",
+      "Espace stretching"
+    ],
+    "specializedExerciseTypes": [
+      "cardio",
+      "musculation",
+      "fitness"
+    ]
   }
 }
 
@@ -52,6 +62,7 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
 
 docs {

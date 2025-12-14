@@ -19,12 +19,10 @@ export class Workout {
   @Column()
   caloriesBurned: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn() // Date de la séance
   createdAt: Date;
 
   // Relations
-  @Column()
-  userId: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })

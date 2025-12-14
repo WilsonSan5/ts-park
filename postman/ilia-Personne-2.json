@@ -105,7 +105,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"nouveauadmin@tspark.com\",\n  \"password\": \"SuperSecurePass123\",\n  \"firstName\": \"Marie\",\n  \"lastName\": \"Martin\",\n  \"role\": \"super_admin\"\n}"
+							"raw": "{\n  \"email\": \"admin@tspark.com\",\n  \"password\": \"AdminSecure123\",\n  \"firstName\": \"Marie\",\n  \"lastName\": \"Martin\",\n  \"role\": \"super_admin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/register",
@@ -122,7 +122,7 @@
 					"response": []
 				},
 				{
-					"name": "Login - Utilisateur Normal",
+					"name": "Login - Client",
 					"event": [
 						{
 							"listen": "test",
@@ -137,13 +137,13 @@
 									"    pm.expect(jsonData.data).to.have.property('token');",
 									"});",
 									"",
-									"// Sauvegarder le token utilisateur",
+									"// Sauvegarder le token client",
 									"var jsonData = pm.response.json();",
 									"if (jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set(\"user_token\", jsonData.data.token);",
-									"    pm.collectionVariables.set(\"user_id\", jsonData.data.user.id);",
-									"    console.log(\"✅ Connecté comme:\", jsonData.data.user.email);",
-									"    console.log(\"🔑 Token sauvegardé\");",
+									"    pm.collectionVariables.set(\"client_token\", jsonData.data.token);",
+									"    pm.collectionVariables.set(\"client_id\", jsonData.data.user.id);",
+									"    console.log(\"✅ Connecté comme client:\", jsonData.data.user.email);",
+									"    console.log(\"🔑 Token client sauvegardé\");",
 									"}"
 								],
 								"type": "text/javascript"
@@ -160,7 +160,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"user@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
+							"raw": "{\n  \"email\": \"nouveauclient@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/auth/login",
@@ -172,7 +172,7 @@
 								"login"
 							]
 						},
-						"description": "Connexion d'un utilisateur standard"
+						"description": "Connexion avec le rôle client pour participer aux défis et créer des workouts"
 					},
 					"response": []
 				},
@@ -228,54 +228,6 @@
 							]
 						},
 						"description": "Connexion avec le rôle gym_owner pour gérer les salles"
-					},
-					"response": []
-				},
-				{
-					"name": "Login - Client",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Connexion réussie\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"var jsonData = pm.response.json();",
-									"if (jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set(\"client_token\", jsonData.data.token);",
-									"    pm.collectionVariables.set(\"client_id\", jsonData.data.user.id);",
-									"    console.log(\"✅ Connecté comme client:\", jsonData.data.user.email);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"SecurePass123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"login"
-							]
-						},
-						"description": "Connexion avec le rôle client pour participer aux défis"
 					},
 					"response": []
 				},
@@ -1798,6 +1750,178 @@
 			"description": "Tests pour la gestion des profils utilisateurs"
 		},
 		{
+			"name": "⏲️ Workouts",
+			"item": [
+				{
+					"name": "Créer un Nouveau Workout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Workout créé avec succès\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Données du workout reçues\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('duration');",
+									"    pm.expect(jsonData).to.have.property('userId');",
+									"});",
+									"",
+									"// Sauvegarder l'ID du workout créé",
+									"var jsonData = pm.response.json();",
+									"if (jsonData && jsonData.id) {",
+									"    pm.collectionVariables.set(\"new_workout_id\", jsonData.id);",
+									"    console.log(\"✅ Workout créé:\", jsonData.name);",
+									"    console.log(\"🆔 ID:\", jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Pecs, épaule, triceps\",\n  \"description\": \"À faire 2 fois par semaine pour muscler le haut du corps.\",\n  \"duration\": 70\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workouts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workouts"
+							]
+						},
+						"description": "Créer un nouveau workout avec nom, description et durée"
+					},
+					"response": []
+				},
+				{
+					"name": "Lister Tous les Workouts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Liste des workouts récupérée\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Format de réponse correct\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Workouts contiennent les bonnes propriétés\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('id');",
+									"        pm.expect(jsonData[0]).to.have.property('name');",
+									"        pm.expect(jsonData[0]).to.have.property('duration');",
+									"        pm.expect(jsonData[0]).to.have.property('userId');",
+									"    }",
+									"});",
+									"",
+									"console.log(\"✅ Nombre de workouts:\", pm.response.json().length);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workouts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workouts"
+							]
+						},
+						"description": "Récupérer tous les workouts de l'utilisateur connecté"
+					},
+					"response": []
+				},
+				{
+					"name": "Créer Workout avec Admin Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Workout créé avec succès par admin\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Données du workout reçues\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('duration');",
+									"});",
+									"",
+									"console.log(\"✅ Workout admin créé:\", pm.response.json().name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Cardio Intense Admin\",\n  \"description\": \"Séance de cardio intensive créée par l'admin.\",\n  \"duration\": 45\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workouts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workouts"
+							]
+						},
+						"description": "Créer un workout avec le token admin pour tester les permissions"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests pour la création et récupération des workouts d'entraînement"
+		},
+		{
 			"name": "❌ Tests d'Erreurs",
 			"item": [
 				{
@@ -2082,6 +2206,12 @@
 			"value": "",
 			"type": "string",
 			"description": "ID du nouveau défi créé"
+		},
+		{
+			"key": "new_workout_id",
+			"value": "",
+			"type": "string",
+			"description": "ID du nouveau workout créé"
 		}
 	]
 }

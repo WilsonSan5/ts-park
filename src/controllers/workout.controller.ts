@@ -43,12 +43,11 @@ export class WorkoutController {
 
   async getAllWorkouts(req: Request, res: Response) {
     try {
-      const workouts = await this.workoutService.getAllWorkouts();
+      const userId  =  req.user!.userId;
+      const workouts = await this.workoutService.getAllWorkouts(userId);
       return res.status(200).json(workouts);
     } catch (error: any) {
       return res.status(500).json({ message: error.message || 'Failed to retrieve workouts' });
     }
   }
-
-
 }

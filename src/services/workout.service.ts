@@ -1,4 +1,5 @@
 import { AppDataSource } from '@config/database';
+import { Workout } from '../types/index';
 import { Workout as WorkoutModel } from '../models/Workout';
 import { WorkoutExercise as WorkoutExerciseModel } from '../models/WorkoutExercice';
 import { Workout } from '../types';

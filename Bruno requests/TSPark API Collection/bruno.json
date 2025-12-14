@@ -1,9 +1,0 @@
-{
-  "version": "1",
-  "name": "TSPark API Collection",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
-}

@@ -1,0 +1,45 @@
+meta {
+  name: Modifier un Exercice (Super Admin)
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{base_url}}/exercises/{{exercise_id}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{admin_token}}
+}
+
+body:json {
+  {
+    "description": "MISE À JOUR : Variation très difficile des pompes traditionnelles avec les mains en forme de diamant, excellent pour les triceps",
+    "caloriesPerMinute": 9.0,
+    "instructions": "Placez vos mains en forme de diamant sous votre poitrine, descendez lentement et remontez en contrôlant parfaitement le mouvement. Gardez le corps bien droit."
+  }
+}
+
+script:post-response {
+  test("Modification réussie", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Exercice modifié", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.description).to.include('MISE À JOUR');
+  });
+  
+  console.log("✏️ Exercice modifié:", res.getBody().data.name);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Modifier un exercice existant (super_admin uniquement)
+}

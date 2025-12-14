@@ -1,0 +1,37 @@
+meta {
+  name: Supprimer Utilisateur (Admin)
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{base_url}}/users/{{new_user_id}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{admin_token}}
+}
+
+script:post-response {
+  test("Utilisateur supprimé", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Message de confirmation", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.success).to.eql(true);
+      expect(jsonData.message).to.include('deleted');
+  });
+  
+  console.log("🗑️ Utilisateur supprimé (soft delete)");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Supprimer un utilisateur (super_admin uniquement) - Soft delete
+}

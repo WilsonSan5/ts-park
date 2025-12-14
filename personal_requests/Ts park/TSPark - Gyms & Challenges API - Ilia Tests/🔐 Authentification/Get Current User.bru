@@ -1,0 +1,44 @@
+meta {
+  name: Get Current User
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{base_url}}/auth/me
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{admin_token}}
+}
+
+script:post-response {
+  test("Profil utilisateur récupéré", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Données utilisateur complètes", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('id');
+      expect(jsonData.data).to.have.property('email');
+      expect(jsonData.data).to.have.property('firstName');
+      expect(jsonData.data).to.have.property('lastName');
+      expect(jsonData.data).to.have.property('role');
+  });
+  
+  var jsonData = res.getBody();
+  console.log("👤 Utilisateur actuel:", jsonData.data.firstName, jsonData.data.lastName);
+  console.log("📧 Email:", jsonData.data.email);
+  console.log("🔑 Rôle:", jsonData.data.role);
+  console.log("🎯 Points totaux:", jsonData.data.totalPoints || 0);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Récupérer les informations de l'utilisateur connecté
+}

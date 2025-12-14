@@ -1,0 +1,31 @@
+meta {
+  name: Supprimer un Exercice (Super Admin)
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{base_url}}/exercises/{{exercise_id}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{admin_token}}
+}
+
+script:post-response {
+  test("Suppression réussie", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  console.log("🗑️ Exercice supprimé avec succès");
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Supprimer un exercice (super_admin uniquement)
+}

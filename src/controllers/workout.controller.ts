@@ -23,7 +23,7 @@ export class WorkoutController {
 
     try {
       const { name, description, duration, exercises, } = req.body;
-      const { userId } = req.user!;
+      const userId  =  req.user!.userId;
       const workoutData: Workout = {
         name,
         description,

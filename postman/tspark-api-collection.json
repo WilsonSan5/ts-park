@@ -40,7 +40,7 @@
       "type": "string"
     },
     {
-      "key": "exerciseId",
+      "key": "exerciseId",  
       "value": "",
       "type": "string"
     },
@@ -67,7 +67,7 @@
   ],
   "item": [
     {
-      "name": "0. Health Check",
+      "name": "❤️ 0. Health Check",
       "item": [
         {
           "name": "Health Check",
@@ -88,8 +88,8 @@
       ]
     },
     {
-      "name": "1. Setup - User Login (Pre-seeded Users)",
-      "description": "START HERE!\n\n**DEFAULT USERS (auto-created by seeder):**\n1. Super Admin: admin@tspark.com / SuperAdmin123!\n2. Gym Owner: gymowner@tspark.com / GymOwner123!\n3. Client 1: client1@tspark.com / Client123!\n4. Client 2: client2@tspark.com / Client123!\n\n**Just run `docker-compose up` and all users are ready!**\n\n**Roles:**\n- `super_admin`: Full platform access\n- `gym_owner`: Can create/manage gyms and challenges\n- `client`: Can join gyms, participate in challenges, log workouts, add friends",
+      "name": "🚀 1. Setup - User Registration & Login",
+      "description": "START HERE! Register users with different roles and get their tokens.\n\n**Roles:**\n- `super_admin`: Full platform access, can create exercises\n- `gym_owner`: Can create/manage gyms and challenges\n- `client`: Can join gyms, participate in challenges, log workouts",
       "item": [
         {
           "name": "1.1 Login Super Admin",
@@ -267,7 +267,7 @@
       ]
     },
     {
-      "name": "2. Exercises (Super Admin Only)",
+      "name": "💪 2. Exercises (Super Admin Only)",
       "description": "Exercise CRUD operations. Only Super Admins can create/update/delete exercises.",
       "item": [
         {
@@ -432,7 +432,7 @@
       ]
     },
     {
-      "name": "3. Gyms (Gym Owner)",
+      "name": "🏋️ 3. Gyms (Gym Owner)",
       "description": "Gym management. Gym Owners can create gyms, Super Admins can approve them.",
       "item": [
         {
@@ -572,7 +572,7 @@
       ]
     },
     {
-      "name": "4. Challenges (Gym Owner)",
+      "name": "🎯 4. Challenges (Gym Owner)",
       "description": "Challenge management. Gym Owners create challenges for their gyms.",
       "item": [
         {
@@ -715,7 +715,7 @@
       ]
     },
     {
-      "name": "5. Workouts (Client)",
+      "name": "⏱️ 5. Workouts (Client)",
       "description": "Workout logging. Clients log workouts to track progress in challenges.",
       "item": [
         {
@@ -767,7 +767,7 @@
       ]
     },
     {
-      "name": "6. Social / Friends",
+      "name": "🤝 6. Social / Friends",
       "description": "Friend management. Send requests, accept/reject, and manage friendships.",
       "item": [
         {
@@ -931,8 +931,8 @@
       ]
     },
     {
-      "name": "7. Users (Admin)",
-      "description": "User management endpoints for administrators.\n\n**IMPORTANT**: To create users with elevated roles (gym_owner, super_admin), use the Admin Create User endpoint.",
+      "name": "👥 7. Users (Admin)",
+      "description": "User management endpoints for administrators.",
       "item": [
         {
           "name": "7.1 Admin Create User (Super Admin)",

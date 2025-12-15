@@ -67,7 +67,7 @@
   ],
   "item": [
     {
-      "name": "0. Health Check",
+      "name": "❤️ 0. Health Check",
       "item": [
         {
           "name": "Health Check",
@@ -267,7 +267,7 @@
       ]
     },
     {
-      "name": "2. Exercises (Super Admin Only)",
+      "name": "💪 2. Exercises (Super Admin Only)",
       "description": "Exercise CRUD operations. Only Super Admins can create/update/delete exercises.",
       "item": [
         {
@@ -432,7 +432,7 @@
       ]
     },
     {
-      "name": "3. Gyms (Gym Owner)",
+      "name": "🏋️ 3. Gyms (Gym Owner)",
       "description": "Gym management. Gym Owners can create gyms, Super Admins can approve them.",
       "item": [
         {
@@ -572,7 +572,7 @@
       ]
     },
     {
-      "name": "4. Challenges (Gym Owner)",
+      "name": "🎯 4. Challenges (Gym Owner)",
       "description": "Challenge management. Gym Owners create challenges for their gyms.",
       "item": [
         {
@@ -715,7 +715,7 @@
       ]
     },
     {
-      "name": "5. Workouts (Client)",
+      "name": "⏱️ 5. Workouts (Client)",
       "description": "Workout logging. Clients log workouts to track progress in challenges.",
       "item": [
         {
@@ -767,7 +767,7 @@
       ]
     },
     {
-      "name": "6. Social / Friends",
+      "name": "🤝 6. Social / Friends",
       "description": "Friend management. Send requests, accept/reject, and manage friendships.",
       "item": [
         {

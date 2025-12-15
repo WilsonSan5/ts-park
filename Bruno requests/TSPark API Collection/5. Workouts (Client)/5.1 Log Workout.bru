@@ -7,7 +7,11 @@ meta {
 post {
   url: {{base_url}}/workouts
   body: json
+<<<<<<< HEAD
   auth: none
+=======
+  auth: inherit
+>>>>>>> 2fb989c (new Postman requests)
 }
 
 headers {
@@ -24,7 +28,11 @@ body:json {
     "caloriesBurned": 350,
     "exercises": [
       {
+<<<<<<< HEAD
         "exerciseId": "toto",
+=======
+        "exerciseId": "{{exerciseId}}",
+>>>>>>> 2fb989c (new Postman requests)
         "sets": 4,
         "reps": 10,
         "weight": 80
@@ -33,6 +41,7 @@ body:json {
   }
 }
 
+<<<<<<< HEAD
 vars:pre-request {
   : 
 }
@@ -40,6 +49,10 @@ vars:pre-request {
 settings {
   encodeUrl: true
   timeout: 0
+=======
+settings {
+  encodeUrl: true
+>>>>>>> 2fb989c (new Postman requests)
 }
 
 docs {

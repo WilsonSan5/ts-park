@@ -4,13 +4,14 @@ import { sendSuccess, sendError, sendCreated } from '../utils/response';
 import { UserRole } from '../types';
 
 /**
- * Handles user registration.
- * Validates input and creates new user account.
+ * Handles public user registration.
+ * SECURITY: Always creates users with CLIENT role.
+ * Elevated roles (gym_owner, super_admin) must be assigned by admin.
  * @route POST /api/auth/register
  */
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, firstName, lastName } = req.body;
 
     // Input validation
     if (!email || !password || !firstName || !lastName) {
@@ -28,8 +29,9 @@ export const register = async (req: Request, res: Response) => {
       return sendError(res, 'Password must be at least 8 characters long', 400);
     }
 
-    // Call service to register user
-    const user = await registerUser(email, password, firstName, lastName, role as UserRole);
+    // SECURITY: Public registration always creates CLIENT role
+    // Elevated roles must be assigned through admin endpoints
+    const user = await registerUser(email, password, firstName, lastName, UserRole.CLIENT);
 
     return sendCreated(res, 'User registered successfully', { user });
 

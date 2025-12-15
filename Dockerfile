@@ -20,11 +20,15 @@ RUN npm install
 # Copy source code
 COPY src ./src
 
+# Copy entrypoint script
+COPY docker/scripts/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expose port
 EXPOSE 3000
 
-# Development command with hot-reload
-CMD ["npm", "run", "dev"]
+# Use entrypoint script (runs migrations + seeder + dev server)
+ENTRYPOINT ["/entrypoint.sh"]
 
 # ===================================
 # Builder Stage (for production)

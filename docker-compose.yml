@@ -45,6 +45,9 @@ services:
       # JWT Configuration
       JWT_SECRET: dev-secret-key-change-in-production-please
       JWT_EXPIRES_IN: 24h
+      # Super Admin Configuration (created on first startup)
+      SUPER_ADMIN_EMAIL: admin@tspark.com
+      SUPER_ADMIN_PASSWORD: SuperAdmin123!
       # Email Configuration (optional for development)
       EMAIL_HOST: smtp.gmail.com
       EMAIL_PORT: 587
@@ -64,6 +67,8 @@ services:
       - ./package.json:/app/package.json:delegated
       - ./tsconfig.json:/app/tsconfig.json:delegated
       - ./nodemon.json:/app/nodemon.json:delegated
+      # Mount entrypoint script
+      - ./docker/scripts/entrypoint.sh:/entrypoint.sh:delegated
       # Prevent node_modules from being overwritten
       - /app/node_modules
     depends_on:

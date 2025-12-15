@@ -89,160 +89,10 @@
     },
     {
       "name": "1. Setup - User Registration & Login",
-      "description": "START HERE! Register users with different roles and get their tokens.\n\n**Roles:**\n- `super_admin`: Full platform access, can create exercises\n- `gym_owner`: Can create/manage gyms and challenges\n- `client`: Can join gyms, participate in challenges, log workouts",
+      "description": "START HERE!\n\n**SECURE SETUP FLOW:**\n1. Run `npm run seed` to create initial Super Admin\n2. Login as Super Admin (1.1)\n3. Use Admin Create User (folder 7) to create gym_owner accounts\n4. Register clients via public registration (1.2)\n\n**Roles:**\n- `super_admin`: Full platform access (created via seeder or admin endpoint)\n- `gym_owner`: Can create/manage gyms (created via admin endpoint)\n- `client`: Public registration (default role)",
       "item": [
         {
-          "name": "1.1 Register Super Admin",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    console.log('Super Admin created:', jsonData.data.user.email);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"superadmin@tspark.com\",\n  \"password\": \"SuperAdmin123!\",\n  \"firstName\": \"Super\",\n  \"lastName\": \"Admin\",\n  \"role\": \"super_admin\"\n}"
-            },
-            "description": "**IMPORTANT**: Creates a Super Admin account.\n\nSuper Admins can:\n- Create, update, delete exercises\n- Approve/reject gyms\n- Manage all users\n- Full platform access"
-          },
-          "response": []
-        },
-        {
-          "name": "1.2 Register Gym Owner",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    console.log('Gym Owner created:', jsonData.data.user.email);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"gymowner@tspark.com\",\n  \"password\": \"GymOwner123!\",\n  \"firstName\": \"Gym\",\n  \"lastName\": \"Owner\",\n  \"role\": \"gym_owner\"\n}"
-            },
-            "description": "Creates a Gym Owner account.\n\nGym Owners can:\n- Create and manage their own gyms\n- Create challenges for their gyms\n- View gym members and statistics"
-          },
-          "response": []
-        },
-        {
-          "name": "1.3 Register Client 1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('clientUserId', jsonData.data.user.id);",
-                  "    console.log('Client created with ID:', jsonData.data.user.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"Client123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"client\"\n}"
-            },
-            "description": "Creates a Client account.\n\nClients can:\n- Join gyms\n- Participate in challenges\n- Log workouts\n- Add friends\n- View leaderboards"
-          },
-          "response": []
-        },
-        {
-          "name": "1.4 Register Client 2 (for friend testing)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('client2UserId', jsonData.data.user.id);",
-                  "    console.log('Client 2 created with ID:', jsonData.data.user.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"client2@tspark.com\",\n  \"password\": \"Client123!\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"role\": \"client\"\n}"
-            },
-            "description": "Creates a second Client for testing friend requests.\n\nUse this account to test:\n- Sending/receiving friend requests\n- Accepting/rejecting requests\n- Viewing friends list"
-          },
-          "response": []
-        },
-        {
-          "name": "1.5 Login Super Admin",
+          "name": "1.1 Login Super Admin (run 'npm run seed' first!)",
           "event": [
             {
               "listen": "test",
@@ -273,14 +123,90 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"superadmin@tspark.com\",\n  \"password\": \"SuperAdmin123!\"\n}"
+              "raw": "{\n  \"email\": \"admin@tspark.com\",\n  \"password\": \"SuperAdmin123!\"\n}"
             },
-            "description": "Login as Super Admin.\n\n**Auto-saves token** to `{{superAdminToken}}` variable.\n\nUse this token for:\n- Creating exercises\n- Approving gyms\n- Managing users"
+            "description": "**FIRST: Run `npm run seed` to create the Super Admin!**\n\nDefault credentials:\n- Email: admin@tspark.com\n- Password: SuperAdmin123!\n\nOr set via environment variables:\n- SUPER_ADMIN_EMAIL\n- SUPER_ADMIN_PASSWORD"
           },
           "response": []
         },
         {
-          "name": "1.6 Login Gym Owner",
+          "name": "1.2 Register Client (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('clientUserId', jsonData.data.user.id);",
+                  "    console.log('Client created with ID:', jsonData.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"Client123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+            },
+            "description": "**Public registration - always creates CLIENT role.**\n\nTo create gym_owner or super_admin, use:\n- Admin Create User endpoint (folder 7.1)\n- Or run `npm run seed`\n\nClients can:\n- Join gyms\n- Participate in challenges\n- Log workouts\n- Add friends"
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Register Client 2 (for friend testing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('client2UserId', jsonData.data.user.id);",
+                  "    console.log('Client 2 created with ID:', jsonData.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client2@tspark.com\",\n  \"password\": \"Client123!\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\"\n}"
+            },
+            "description": "Creates a second Client for testing friend requests."
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Login Gym Owner",
           "event": [
             {
               "listen": "test",
@@ -313,12 +239,12 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"gymowner@tspark.com\",\n  \"password\": \"GymOwner123!\"\n}"
             },
-            "description": "Login as Gym Owner.\n\n**Auto-saves token** to `{{gymOwnerToken}}` variable.\n\nUse this token for:\n- Creating gyms\n- Creating challenges\n- Managing gym operations"
+            "description": "Login as Gym Owner.\n\n**NOTE:** Gym owners must be created via Admin Create User (folder 7.1) first!\n\n**Auto-saves token** to `{{gymOwnerToken}}` variable."
           },
           "response": []
         },
         {
-          "name": "1.7 Login Client 1",
+          "name": "1.5 Login Client 1",
           "event": [
             {
               "listen": "test",
@@ -351,12 +277,12 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"Client123!\"\n}"
             },
-            "description": "Login as Client.\n\n**Auto-saves token** to `{{clientToken}}` variable.\n\nUse this token for:\n- Joining gyms and challenges\n- Logging workouts\n- Social features"
+            "description": "Login as Client.\n\n**Auto-saves token** to `{{clientToken}}` variable."
           },
           "response": []
         },
         {
-          "name": "1.8 Login Client 2",
+          "name": "1.6 Login Client 2",
           "event": [
             {
               "listen": "test",
@@ -389,12 +315,12 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"client2@tspark.com\",\n  \"password\": \"Client123!\"\n}"
             },
-            "description": "Login as Client 2.\n\n**Auto-saves token** to `{{client2Token}}` variable.\n\nUse this token for:\n- Accepting friend requests\n- Testing multi-user scenarios"
+            "description": "Login as Client 2.\n\n**Auto-saves token** to `{{client2Token}}` variable."
           },
           "response": []
         },
         {
-          "name": "1.9 Get Current User Profile",
+          "name": "1.7 Get Current User Profile",
           "request": {
             "method": "GET",
             "header": [
@@ -1080,10 +1006,78 @@
     },
     {
       "name": "7. Users (Admin)",
-      "description": "User management endpoints for administrators.",
+      "description": "User management endpoints for administrators.\n\n**IMPORTANT**: To create users with elevated roles (gym_owner, super_admin), use the Admin Create User endpoint.",
       "item": [
         {
-          "name": "List All Users (Super Admin)",
+          "name": "7.1 Admin Create User (Super Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    console.log('User created:', jsonData.data.user.email, 'with role:', jsonData.data.user.role);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/admin/create",
+              "host": ["{{base_url}}"],
+              "path": ["users", "admin", "create"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newgymowner@tspark.com\",\n  \"password\": \"GymOwner123!\",\n  \"firstName\": \"New\",\n  \"lastName\": \"GymOwner\",\n  \"role\": \"gym_owner\"\n}"
+            },
+            "description": "**Requires Super Admin token!**\n\nCreate a user with any role. This is the ONLY way to create users with elevated roles.\n\n**Available roles:**\n- `client` - Regular user\n- `gym_owner` - Can create gyms and challenges\n- `super_admin` - Full platform access"
+          },
+          "response": []
+        },
+        {
+          "name": "7.2 Update User Role (Super Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{clientUserId}}/role",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{clientUserId}}", "role"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"gym_owner\"\n}"
+            },
+            "description": "**Requires Super Admin token!**\n\nPromote or demote a user by changing their role.\n\n**Available roles:**\n- `client`\n- `gym_owner`\n- `super_admin`"
+          },
+          "response": []
+        },
+        {
+          "name": "7.3 List All Users (Super Admin)",
           "request": {
             "method": "GET",
             "header": [
@@ -1102,7 +1096,7 @@
           "response": []
         },
         {
-          "name": "Get User by ID",
+          "name": "7.4 Get User by ID",
           "request": {
             "method": "GET",
             "header": [
@@ -1121,7 +1115,7 @@
           "response": []
         },
         {
-          "name": "Get User Stats",
+          "name": "7.5 Get User Stats",
           "request": {
             "method": "GET",
             "header": [
@@ -1136,6 +1130,25 @@
               "path": ["users", "{{clientUserId}}", "stats"]
             },
             "description": "Get user statistics (workouts, challenges, badges)."
+          },
+          "response": []
+        },
+        {
+          "name": "7.6 Delete User (Super Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/{{clientUserId}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{clientUserId}}"]
+            },
+            "description": "**Requires Super Admin token!**\n\nDeactivate a user account (soft delete)."
           },
           "response": []
         }

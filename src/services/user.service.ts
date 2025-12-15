@@ -1,7 +1,7 @@
 import { AppDataSource } from '../config/database';
 import { User } from '../models/User';
 import { hashPassword, comparePassword } from '../utils/password';
-import { UserStatus } from '../types';
+import { UserRole, UserStatus } from '../types';
 
 const userRepository = AppDataSource.getRepository(User);
 
@@ -141,4 +141,69 @@ export const getUserStats = async (userId: string) => {
     totalPoints: user.totalPoints,
     memberSince: user.createdAt,
   };
+};
+
+/**
+ * Creates a user with specified role (Admin only)
+ * SECURITY: This should only be called from admin-protected endpoints
+ */
+export const createUserWithRole = async (
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  role: UserRole
+) => {
+  // Check for existing user
+  const existingUser = await userRepository.findOne({ where: { email } });
+  if (existingUser) {
+    throw new Error('User with this email already exists');
+  }
+
+  // Validate role
+  if (!Object.values(UserRole).includes(role)) {
+    throw new Error('Invalid role specified');
+  }
+
+  // SECURITY: Hash password before storage
+  const hashedPassword = await hashPassword(password);
+
+  const user = userRepository.create({
+    email,
+    password: hashedPassword,
+    firstName,
+    lastName,
+    role,
+    status: UserStatus.ACTIVE,
+    emailVerified: true, // Admin-created users are pre-verified
+  });
+
+  await userRepository.save(user);
+
+  // SECURITY: Never send password to client
+  const { password: _, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+};
+
+/**
+ * Updates a user's role (Admin only)
+ * SECURITY: This should only be called from admin-protected endpoints
+ */
+export const updateUserRole = async (userId: string, newRole: UserRole) => {
+  const user = await userRepository.findOne({ where: { id: userId } });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Validate role
+  if (!Object.values(UserRole).includes(newRole)) {
+    throw new Error('Invalid role specified');
+  }
+
+  user.role = newRole;
+  await userRepository.save(user);
+
+  const { password: _, ...userWithoutPassword } = user;
+  return userWithoutPassword;
 };

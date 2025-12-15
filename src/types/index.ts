@@ -115,6 +115,22 @@ export interface BadgeAssignment {
   givenAt: Date;
 }
 
+export interface Badge {
+  name: string;
+  description: string;
+  icon: string;
+  pointsValue: number;
+  isActive: boolean;
+  createdAt: Date;
+  createdBy: string;
+}
+
+export interface BadgeAssignment {
+  badgeId: string;
+  userId: string;
+  givenAt: Date;
+}
+
 // Extend Express Request to include user
 declare global {
   namespace Express {

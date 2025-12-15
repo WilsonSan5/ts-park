@@ -7,7 +7,7 @@ meta {
 post {
   url: {{base_url}}/workouts
   body: json
-  auth: inherit
+  auth: none
 }
 
 headers {
@@ -33,8 +33,13 @@ body:json {
   }
 }
 
+vars:pre-request {
+  : 
+}
+
 settings {
   encodeUrl: true
+  timeout: 0
 }
 
 docs {

@@ -53,15 +53,10 @@ async function seedSuperAdmin(): Promise<void> {
   console.log('⚠️  IMPORTANT: Change the password after first login!');
 }
 
-async function seedTestUsers(): Promise<void> {
-  // Only seed test users if explicitly requested
-  if (process.env.SEED_TEST_USERS !== 'true') {
-    return;
-  }
-
+async function seedDefaultUsers(): Promise<void> {
   const userRepository = AppDataSource.getRepository(User);
 
-  const testUsers = [
+  const defaultUsers = [
     {
       email: 'gymowner@tspark.com',
       password: 'GymOwner123!',
@@ -70,7 +65,7 @@ async function seedTestUsers(): Promise<void> {
       role: UserRole.GYM_OWNER,
     },
     {
-      email: 'client@tspark.com',
+      email: 'client1@tspark.com',
       password: 'Client123!',
       firstName: 'John',
       lastName: 'Doe',
@@ -85,13 +80,15 @@ async function seedTestUsers(): Promise<void> {
     },
   ];
 
-  for (const userData of testUsers) {
+  console.log('\n📋 Creating default users...');
+
+  for (const userData of defaultUsers) {
     const existing = await userRepository.findOne({
       where: { email: userData.email }
     });
 
     if (existing) {
-      console.log(`⚠️  Test user already exists: ${userData.email}`);
+      console.log(`⚠️  User already exists: ${userData.email}`);
       continue;
     }
 
@@ -105,7 +102,7 @@ async function seedTestUsers(): Promise<void> {
     });
 
     await userRepository.save(user);
-    console.log(`✅ Test user created: ${userData.email} (${userData.role})`);
+    console.log(`✅ Created: ${userData.email} (${userData.role}) - Password: ${userData.password}`);
   }
 }
 
@@ -119,7 +116,7 @@ async function main(): Promise<void> {
 
     // Run seeders
     await seedSuperAdmin();
-    await seedTestUsers();
+    await seedDefaultUsers();
 
     console.log('\n🎉 Seeding completed!');
   } catch (error) {

@@ -88,11 +88,11 @@
       ]
     },
     {
-      "name": "1. Setup - User Registration & Login",
-      "description": "START HERE!\n\n**SECURE SETUP FLOW:**\n1. Run `npm run seed` to create initial Super Admin\n2. Login as Super Admin (1.1)\n3. Use Admin Create User (folder 7) to create gym_owner accounts\n4. Register clients via public registration (1.2)\n\n**Roles:**\n- `super_admin`: Full platform access (created via seeder or admin endpoint)\n- `gym_owner`: Can create/manage gyms (created via admin endpoint)\n- `client`: Public registration (default role)",
+      "name": "1. Setup - User Login (Pre-seeded Users)",
+      "description": "START HERE!\n\n**DEFAULT USERS (auto-created by seeder):**\n1. Super Admin: admin@tspark.com / SuperAdmin123!\n2. Gym Owner: gymowner@tspark.com / GymOwner123!\n3. Client 1: client1@tspark.com / Client123!\n4. Client 2: client2@tspark.com / Client123!\n\n**Just run `docker-compose up` and all users are ready!**\n\n**Roles:**\n- `super_admin`: Full platform access\n- `gym_owner`: Can create/manage gyms and challenges\n- `client`: Can join gyms, participate in challenges, log workouts, add friends",
       "item": [
         {
-          "name": "1.1 Login Super Admin (run 'npm run seed' first!)",
+          "name": "1.1 Login Super Admin",
           "event": [
             {
               "listen": "test",
@@ -125,88 +125,12 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@tspark.com\",\n  \"password\": \"SuperAdmin123!\"\n}"
             },
-            "description": "**FIRST: Run `npm run seed` to create the Super Admin!**\n\nDefault credentials:\n- Email: admin@tspark.com\n- Password: SuperAdmin123!\n\nOr set via environment variables:\n- SUPER_ADMIN_EMAIL\n- SUPER_ADMIN_PASSWORD"
+            "description": "Login as Super Admin (auto-created by seeder).\n\nCredentials:\n- Email: admin@tspark.com\n- Password: SuperAdmin123!\n\n**Auto-saves token** to `{{superAdminToken}}`"
           },
           "response": []
         },
         {
-          "name": "1.2 Register Client (Public)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('clientUserId', jsonData.data.user.id);",
-                  "    console.log('Client created with ID:', jsonData.data.user.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"Client123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
-            },
-            "description": "**Public registration - always creates CLIENT role.**\n\nTo create gym_owner or super_admin, use:\n- Admin Create User endpoint (folder 7.1)\n- Or run `npm run seed`\n\nClients can:\n- Join gyms\n- Participate in challenges\n- Log workouts\n- Add friends"
-          },
-          "response": []
-        },
-        {
-          "name": "1.3 Register Client 2 (for friend testing)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('client2UserId', jsonData.data.user.id);",
-                  "    console.log('Client 2 created with ID:', jsonData.data.user.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"client2@tspark.com\",\n  \"password\": \"Client123!\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\"\n}"
-            },
-            "description": "Creates a second Client for testing friend requests."
-          },
-          "response": []
-        },
-        {
-          "name": "1.4 Login Gym Owner",
+          "name": "1.2 Login Gym Owner",
           "event": [
             {
               "listen": "test",
@@ -239,12 +163,12 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"gymowner@tspark.com\",\n  \"password\": \"GymOwner123!\"\n}"
             },
-            "description": "Login as Gym Owner.\n\n**NOTE:** Gym owners must be created via Admin Create User (folder 7.1) first!\n\n**Auto-saves token** to `{{gymOwnerToken}}` variable."
+            "description": "Login as Gym Owner (auto-created by seeder).\n\nCredentials:\n- Email: gymowner@tspark.com\n- Password: GymOwner123!\n\n**Auto-saves token** to `{{gymOwnerToken}}`"
           },
           "response": []
         },
         {
-          "name": "1.5 Login Client 1",
+          "name": "1.3 Login Client 1 (John Doe)",
           "event": [
             {
               "listen": "test",
@@ -253,7 +177,8 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('clientToken', jsonData.data.token);",
-                  "    console.log('Client token saved!');",
+                  "    pm.collectionVariables.set('clientUserId', jsonData.data.user.id);",
+                  "    console.log('Client 1 token saved! User ID:', jsonData.data.user.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -275,14 +200,14 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"client@tspark.com\",\n  \"password\": \"Client123!\"\n}"
+              "raw": "{\n  \"email\": \"client1@tspark.com\",\n  \"password\": \"Client123!\"\n}"
             },
-            "description": "Login as Client.\n\n**Auto-saves token** to `{{clientToken}}` variable."
+            "description": "Login as Client 1 - John Doe (auto-created by seeder).\n\nCredentials:\n- Email: client1@tspark.com\n- Password: Client123!\n\n**Auto-saves token** to `{{clientToken}}` and **user ID** to `{{clientUserId}}`"
           },
           "response": []
         },
         {
-          "name": "1.6 Login Client 2",
+          "name": "1.4 Login Client 2 (Jane Smith)",
           "event": [
             {
               "listen": "test",
@@ -291,7 +216,8 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('client2Token', jsonData.data.token);",
-                  "    console.log('Client 2 token saved!');",
+                  "    pm.collectionVariables.set('client2UserId', jsonData.data.user.id);",
+                  "    console.log('Client 2 token saved! User ID:', jsonData.data.user.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -315,12 +241,12 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"client2@tspark.com\",\n  \"password\": \"Client123!\"\n}"
             },
-            "description": "Login as Client 2.\n\n**Auto-saves token** to `{{client2Token}}` variable."
+            "description": "Login as Client 2 - Jane Smith (auto-created by seeder).\n\nCredentials:\n- Email: client2@tspark.com\n- Password: Client123!\n\n**Auto-saves token** to `{{client2Token}}` and **user ID** to `{{client2UserId}}`"
           },
           "response": []
         },
         {
-          "name": "1.7 Get Current User Profile",
+          "name": "1.5 Get Current User Profile",
           "request": {
             "method": "GET",
             "header": [

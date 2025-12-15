@@ -40,7 +40,7 @@
       "type": "string"
     },
     {
-      "key": "exerciseId",
+      "key": "exerciseId",  
       "value": "",
       "type": "string"
     },
@@ -67,7 +67,7 @@
   ],
   "item": [
     {
-      "name": "0. Health Check",
+      "name": "❤️ 0. Health Check",
       "item": [
         {
           "name": "Health Check",
@@ -88,7 +88,7 @@
       ]
     },
     {
-      "name": "1. Setup - User Registration & Login",
+      "name": "🚀 1. Setup - User Registration & Login",
       "description": "START HERE! Register users with different roles and get their tokens.\n\n**Roles:**\n- `super_admin`: Full platform access, can create exercises\n- `gym_owner`: Can create/manage gyms and challenges\n- `client`: Can join gyms, participate in challenges, log workouts",
       "item": [
         {
@@ -415,7 +415,7 @@
       ]
     },
     {
-      "name": "2. Exercises (Super Admin Only)",
+      "name": "💪 2. Exercises (Super Admin Only)",
       "description": "Exercise CRUD operations. Only Super Admins can create/update/delete exercises.",
       "item": [
         {
@@ -580,7 +580,7 @@
       ]
     },
     {
-      "name": "3. Gyms (Gym Owner)",
+      "name": "🏋️ 3. Gyms (Gym Owner)",
       "description": "Gym management. Gym Owners can create gyms, Super Admins can approve them.",
       "item": [
         {
@@ -720,7 +720,7 @@
       ]
     },
     {
-      "name": "4. Challenges (Gym Owner)",
+      "name": "🎯 4. Challenges (Gym Owner)",
       "description": "Challenge management. Gym Owners create challenges for their gyms.",
       "item": [
         {
@@ -863,7 +863,7 @@
       ]
     },
     {
-      "name": "5. Workouts (Client)",
+      "name": "⏱️ 5. Workouts (Client)",
       "description": "Workout logging. Clients log workouts to track progress in challenges.",
       "item": [
         {
@@ -915,7 +915,7 @@
       ]
     },
     {
-      "name": "6. Social / Friends",
+      "name": "🤝 6. Social / Friends",
       "description": "Friend management. Send requests, accept/reject, and manage friendships.",
       "item": [
         {
@@ -1079,7 +1079,7 @@
       ]
     },
     {
-      "name": "7. Users (Admin)",
+      "name": "👥 7. Users (Admin)",
       "description": "User management endpoints for administrators.",
       "item": [
         {

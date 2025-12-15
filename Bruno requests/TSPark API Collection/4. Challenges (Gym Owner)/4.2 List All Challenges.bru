@@ -1,0 +1,23 @@
+meta {
+  name: 4.2 List All Challenges
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/challenges
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  List all public challenges.
+}

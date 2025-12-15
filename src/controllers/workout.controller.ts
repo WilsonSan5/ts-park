@@ -15,7 +15,7 @@ export class WorkoutController {
     const router = Router();
     router.use(authenticateToken);
     router.post('/', this.createWorkout.bind(this));
-    router.get('/', this.getAllWorkouts.bind(this));
+    router.get('/', this.getMyWorkouts.bind(this));
     return router;
   }
 
@@ -41,10 +41,10 @@ export class WorkoutController {
     }
   }
 
-  async getAllWorkouts(req: Request, res: Response) {
+  async getMyWorkouts(req: Request, res: Response) {
     try {
       const userId  =  req.user!.userId;
-      const workouts = await this.workoutService.getAllWorkouts(userId);
+      const workouts = await this.workoutService.getMyWorkouts(userId);
       return res.status(200).json(workouts);
     } catch (error: any) {
       return res.status(500).json({ message: error.message || 'Failed to retrieve workouts' });

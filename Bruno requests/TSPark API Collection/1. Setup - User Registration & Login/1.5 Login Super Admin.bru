@@ -1,0 +1,45 @@
+meta {
+  name: 1.5 Login Super Admin
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "superadmin@tspark.com",
+    "password": "SuperAdmin123!"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      var jsonData = res.getBody();
+      bru.setVar('superAdminToken', jsonData.data.token);
+      console.log('Super Admin token saved!');
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Login as Super Admin.
+  
+  **Auto-saves token** to `{{superAdminToken}}` variable.
+  
+  Use this token for:
+  - Creating exercises
+  - Approving gyms
+  - Managing users
+}

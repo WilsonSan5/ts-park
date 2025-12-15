@@ -1,0 +1,23 @@
+meta {
+  name: 4.6 Get Challenge Participants
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/challenges/{{challengeId}}/participants
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  View all participants in a challenge with their progress.
+}

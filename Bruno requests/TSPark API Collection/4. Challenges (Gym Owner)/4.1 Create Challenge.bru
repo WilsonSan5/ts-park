@@ -1,0 +1,53 @@
+meta {
+  name: 4.1 Create Challenge
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/challenges
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{gymOwnerToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "30-Day Strength Challenge",
+    "description": "Build muscle and strength over 30 days with our structured workout program.",
+    "type": "individual",
+    "difficulty": "medium",
+    "startDate": "2025-01-01T00:00:00Z",
+    "endDate": "2025-01-31T23:59:59Z",
+    "goalType": "workouts",
+    "goalValue": 20,
+    "isPublic": true,
+    "maxParticipants": 100,
+    "gymId": "{{gymId}}",
+    "recommendedExerciseIds": ["{{exerciseId}}"]
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+      var jsonData = res.getBody();
+      bru.setVar('challengeId', jsonData.data.id || jsonData.data.challenge.id);
+      console.log('Challenge created with ID:', bru.getVar('challengeId'));
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Requires Gym Owner token!**
+  
+  Creates a challenge for your gym.
+  
+  **Auto-saves challenge ID** to `{{challengeId}}`
+}

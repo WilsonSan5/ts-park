@@ -1,0 +1,45 @@
+meta {
+  name: 1.6 Login Gym Owner
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "gymowner@tspark.com",
+    "password": "GymOwner123!"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      var jsonData = res.getBody();
+      bru.setVar('gymOwnerToken', jsonData.data.token);
+      console.log('Gym Owner token saved!');
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Login as Gym Owner.
+  
+  **Auto-saves token** to `{{gymOwnerToken}}` variable.
+  
+  Use this token for:
+  - Creating gyms
+  - Creating challenges
+  - Managing gym operations
+}

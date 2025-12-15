@@ -10,7 +10,7 @@ export class WorkoutService {
     return responses; // Return the created workout data
   }
 
-  public async getAllWorkouts(userId: string) {
+  public async getMyWorkouts(userId: string) {
     const workoutRepository = AppDataSource.getRepository(WorkoutModel);
     const workouts = await workoutRepository.find({ where: { userId } });
     return workouts;

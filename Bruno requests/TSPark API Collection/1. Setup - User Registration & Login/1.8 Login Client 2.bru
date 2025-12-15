@@ -1,0 +1,44 @@
+meta {
+  name: 1.8 Login Client 2
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "client2@tspark.com",
+    "password": "Client123!"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      var jsonData = res.getBody();
+      bru.setVar('client2Token', jsonData.data.token);
+      console.log('Client 2 token saved!');
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Login as Client 2.
+  
+  **Auto-saves token** to `{{client2Token}}` variable.
+  
+  Use this token for:
+  - Accepting friend requests
+  - Testing multi-user scenarios
+}

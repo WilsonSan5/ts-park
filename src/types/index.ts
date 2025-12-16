@@ -131,6 +131,45 @@ export interface BadgeAssignment {
   givenAt: Date;
 }
 
+// ==================== DTOS ====================
+
+export interface CreateChallengeDTO {
+  title: string;
+  description: string;
+  type: ChallengeType;
+  difficulty: ChallengeDifficulty;
+  objectives: ChallengeObjectives;
+  startDate: Date;
+  endDate: Date;
+  maxParticipants?: number;
+  pointsReward: number;
+  isPublic: boolean;
+  gymId?: string;
+  recommendedExerciseIds?: string[];
+}
+
+export interface UpdateChallengeDTO {
+  title?: string;
+  description?: string;
+  type?: ChallengeType;
+  difficulty?: ChallengeDifficulty;
+  objectives?: ChallengeObjectives;
+  startDate?: Date;
+  endDate?: Date;
+  maxParticipants?: number;
+  pointsReward?: number;
+  isPublic?: boolean;
+  status?: ChallengeStatus;
+  recommendedExerciseIds?: string[];
+}
+
+export interface FilterChallengesDTO {
+  type?: ChallengeType;
+  difficulty?: ChallengeDifficulty;
+  gymId?: string;
+  isPublic?: boolean;
+}
+
 // Extend Express Request to include user
 declare global {
   namespace Express {

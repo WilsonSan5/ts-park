@@ -1,0 +1,51 @@
+meta {
+  name: Lister Tous les Workouts
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/workouts
+  body: none
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{client_token}}
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyYTcyODIzZC1hMWVlLTQ2NzMtOGVkMC02MDhmMDAzM2VjOTQiLCJlbWFpbCI6Imd5bS5vd25lckB0c3BhcmsuY29tIiwicm9sZSI6Imd5bV9vd25lciIsImlhdCI6MTc2NTc0MzMxOSwiZXhwIjoxNzY1ODI5NzE5fQ._wg-XR3gaDib4zKHtzNR2JWRVR9Mpq3NW_SQ3vccGEY
+}
+
+script:post-response {
+  test("Liste des workouts récupérée", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Format de réponse correct", function () {
+      var jsonData = res.getBody();
+      expect(jsonData).to.be.an('array');
+  });
+  
+  test("Workouts contiennent les bonnes propriétés", function () {
+      var jsonData = res.getBody();
+      if (jsonData.length > 0) {
+          expect(jsonData[0]).to.have.property('id');
+          expect(jsonData[0]).to.have.property('name');
+          expect(jsonData[0]).to.have.property('duration');
+          expect(jsonData[0]).to.have.property('userId');
+      }
+  });
+  
+  console.log("✅ Nombre de workouts:", res.getBody().length);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Récupérer tous les workouts de l'utilisateur connecté
+}

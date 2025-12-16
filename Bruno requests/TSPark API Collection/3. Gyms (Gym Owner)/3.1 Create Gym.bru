@@ -1,0 +1,48 @@
+meta {
+  name: 3.1 Create Gym
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/gyms
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{gymOwnerToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "FitZone Premium",
+    "description": "Modern fitness center with state-of-the-art equipment and personal training services.",
+    "address": "123 Fitness Street, Paris 75001",
+    "phoneNumber": "+33 1 23 45 67 89",
+    "email": "contact@fitzone.com",
+    "openingHours": "Mon-Fri: 6AM-10PM, Sat-Sun: 8AM-8PM",
+    "specializedExerciseTypes": ["strength", "cardio", "flexibility"]
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+      var jsonData = res.getBody();
+      bru.setVar('gymId', jsonData.data.id || jsonData.data.gym.id);
+      console.log('Gym created with ID:', bru.getVar('gymId'));
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Requires Gym Owner token!**
+  
+  Creates a new gym. Status will be 'pending' until approved by Super Admin.
+  
+  **Auto-saves gym ID** to `{{gymId}}`
+}

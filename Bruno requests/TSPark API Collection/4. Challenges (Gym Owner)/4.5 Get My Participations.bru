@@ -1,0 +1,23 @@
+meta {
+  name: 4.5 Get My Participations
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/challenges/my-participations
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  View all challenges you've joined.
+}

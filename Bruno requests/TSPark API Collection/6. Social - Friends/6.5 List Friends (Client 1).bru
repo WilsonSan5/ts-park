@@ -1,0 +1,23 @@
+meta {
+  name: 6.5 List Friends (Client 1)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/friends
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  View all accepted friends.
+}

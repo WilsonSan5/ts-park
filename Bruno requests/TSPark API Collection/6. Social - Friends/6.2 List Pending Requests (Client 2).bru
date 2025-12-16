@@ -1,0 +1,23 @@
+meta {
+  name: 6.2 List Pending Requests (Client 2)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/friends/pending
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{client2Token}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **As Client 2**, view pending friend requests received.
+}

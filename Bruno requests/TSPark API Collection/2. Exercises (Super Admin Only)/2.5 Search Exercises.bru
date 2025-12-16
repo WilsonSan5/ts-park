@@ -1,0 +1,27 @@
+meta {
+  name: 2.5 Search Exercises
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/exercises/search?q=squat
+  body: none
+  auth: inherit
+}
+
+params:query {
+  q: squat
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Search exercises by name or description.
+}

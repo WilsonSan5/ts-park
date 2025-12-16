@@ -1,0 +1,23 @@
+meta {
+  name: 6.6 Get Friendship Status
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/friends/status/{{client2UserId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Check friendship status with another user.
+}

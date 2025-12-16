@@ -1,0 +1,44 @@
+meta {
+  name: 2.2 Create Exercise - Push-ups
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/exercises
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{superAdminToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Push-ups",
+    "description": "Classic bodyweight exercise for upper body strength. Targets chest, shoulders, and triceps.",
+    "type": "strength",
+    "difficulty": "beginner",
+    "muscleGroup": "chest",
+    "equipment": "none",
+    "instructions": [
+      "Start in plank position with hands shoulder-width apart",
+      "Lower body until chest nearly touches the ground",
+      "Keep core tight and body in a straight line",
+      "Push back up to starting position",
+      "Repeat for desired reps"
+    ],
+    "caloriesPerMinute": 7,
+    "imageUrl": "https://example.com/pushups.jpg"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates another exercise for variety.
+}

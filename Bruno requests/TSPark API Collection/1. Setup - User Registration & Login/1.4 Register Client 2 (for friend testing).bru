@@ -1,0 +1,46 @@
+meta {
+  name: 1.4 Register Client 2 (for friend testing)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "client2@tspark.com",
+    "password": "Client123!",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "role": "client"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+      var jsonData = res.getBody();
+      bru.setVar('client2UserId', jsonData.data.user.id);
+      console.log('Client 2 created with ID:', jsonData.data.user.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates a second Client for testing friend requests.
+  
+  Use this account to test:
+  - Sending/receiving friend requests
+  - Accepting/rejecting requests
+  - Viewing friends list
+}

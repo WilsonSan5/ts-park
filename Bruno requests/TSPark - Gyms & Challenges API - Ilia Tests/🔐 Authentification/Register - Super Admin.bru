@@ -1,0 +1,53 @@
+meta {
+  name: Register - Super Admin
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "admin@tspark.com",
+    "password": "AdminSecure123",
+    "firstName": "Marie",
+    "lastName": "Martin",
+    "role": "super_admin"
+  }
+}
+
+script:post-response {
+  test("Super Admin créé", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Rôle super_admin assigné", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.user.role).to.eql('super_admin');
+  });
+  
+  // Sauvegarder les infos du super admin
+  var jsonData = res.getBody();
+  if (jsonData.data && jsonData.data.user) {
+      bru.setVar("new_admin_email", jsonData.data.user.email);
+      bru.setVar("new_admin_id", jsonData.data.user.id);
+      console.log("✅ Super Admin créé:", jsonData.data.user.email);
+      console.log("🔑 Rôle:", jsonData.data.user.role);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Inscription d'un nouveau super administrateur
+}

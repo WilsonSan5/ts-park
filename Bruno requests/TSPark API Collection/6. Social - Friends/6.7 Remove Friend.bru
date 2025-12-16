@@ -1,0 +1,23 @@
+meta {
+  name: 6.7 Remove Friend
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{base_url}}/friends/{{friendshipId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Remove a friend. Either party can remove the friendship.
+}

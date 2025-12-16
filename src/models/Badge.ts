@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { User } from './User';
 
 @Entity('badges')
 export class Badge {
@@ -22,4 +23,13 @@ export class Badge {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column()
+  createdBy: string;
+
+  // Relations
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'createdBy' })
+  user: User;
 }

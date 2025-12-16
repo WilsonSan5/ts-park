@@ -1,6 +1,8 @@
 import { Request, Response, Router } from 'express';
 import { WorkoutService } from '../services/workout.service';
 import { Workout } from '../types/index';
+import { authenticateToken } from '../middleware/auth.middleware';
+import { WorkoutExercise } from '../types/index';
 
 export class WorkoutController {
   readonly workoutService: WorkoutService;
@@ -9,18 +11,27 @@ export class WorkoutController {
     this.workoutService = workoutService;
   }
 
+  buildRouter(): Router {
+    const router = Router();
+    router.use(authenticateToken);
+    router.post('/', this.createWorkout.bind(this));
+    router.get('/', this.getMyWorkouts.bind(this));
+    return router;
+  }
+
   async createWorkout(req: Request, res: Response) {
+
     try {
-      const { name, description, difficulty, duration, exercises, caloriesBurned, userId } = req.body;
+      const { name, description, duration, exercises, } = req.body;
+      const userId  =  req.user!.userId;
       const workoutData: Workout = {
         name,
         description,
-        difficulty,
         duration,
-        caloriesBurned,
+        caloriesBurned : 0,
         createdAt: new Date(),
-        exercises,
-        userId,
+        exercises: exercises as Array<WorkoutExercise>,
+        userId: userId
       };
 
       const workout = await this.workoutService.createWorkout(workoutData);
@@ -30,19 +41,13 @@ export class WorkoutController {
     }
   }
 
-  async getAllWorkouts(req: Request, res: Response) {
+  async getMyWorkouts(req: Request, res: Response) {
     try {
-      const workouts = await this.workoutService.getAllWorkouts();
+      const userId  =  req.user!.userId;
+      const workouts = await this.workoutService.getMyWorkouts(userId);
       return res.status(200).json(workouts);
     } catch (error: any) {
       return res.status(500).json({ message: error.message || 'Failed to retrieve workouts' });
     }
-  }
-  
-  buildRouter(): Router {
-    const router = Router();
-    router.post('/', this.createWorkout.bind(this));
-    router.get('/', this.getAllWorkouts.bind(this));
-    return router;
   }
 }

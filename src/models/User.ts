@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { UserRole, UserStatus } from '../types';
 import { Exercise } from './Exercise';
 import { Gym } from './Gym';
+import { Workout } from './Workout';
 
 @Entity('users')
 export class User {
@@ -53,4 +54,7 @@ export class User {
 
   @OneToMany(() => Exercise, exercise => exercise.createdBy)
   createdExercises: Exercise[];
+
+  @OneToMany(() => Workout, workout => workout.user)
+  workouts: Workout[];
 }

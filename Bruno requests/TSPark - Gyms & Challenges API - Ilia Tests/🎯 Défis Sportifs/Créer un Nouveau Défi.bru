@@ -1,0 +1,65 @@
+meta {
+  name: Créer un Nouveau Défi
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/challenges
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{gym_owner_token}}
+}
+
+body:json {
+  {
+    "title": "Challenge Hiver 2024 - 30 Jours Fitness",
+    "description": "Relevez le défi de faire 30 séances d'entraînement en 30 jours pour démarrer l'année en forme !",
+    "type": "individual",
+    "difficulty": "medium",
+    "objectives": {
+      "targetWorkouts": 30,
+      "targetCalories": 12000,
+      "targetDuration": 1500
+    },
+    "startDate": "2024-12-15T00:00:00.000Z",
+    "endDate": "2025-01-15T23:59:59.000Z",
+    "pointsReward": 500,
+    "maxParticipants": 100,
+    "isPublic": true,
+    "gymId": "{{new_gym_id}}"
+  }
+}
+
+script:post-response {
+  test("Défi créé avec succès", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Données du défi reçues", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('id');
+      expect(jsonData.data).to.have.property('title');
+      expect(jsonData.data).to.have.property('objectives');
+  });
+  
+  // Sauvegarder l'ID du défi
+  var jsonData = res.getBody();
+  if (jsonData.data && jsonData.data.id) {
+      bru.setVar("new_challenge_id", jsonData.data.id);
+      console.log("✅ Défi créé avec l'ID:", jsonData.data.id);
+      console.log("🎯 Titre:", jsonData.data.title);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Créer un nouveau défi sportif
+}

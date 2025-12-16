@@ -1,0 +1,47 @@
+meta {
+  name: 1.1 Register Super Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "superadmin@tspark.com",
+    "password": "SuperAdmin123!",
+    "firstName": "Super",
+    "lastName": "Admin",
+    "role": "super_admin"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+      var jsonData = res.getBody();
+      console.log('Super Admin created:', jsonData.data.user.email);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  **IMPORTANT**: Creates a Super Admin account.
+  
+  Super Admins can:
+  - Create, update, delete exercises
+  - Approve/reject gyms
+  - Manage all users
+  - Full platform access
+}

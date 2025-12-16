@@ -1,0 +1,25 @@
+meta {
+  name: 6.4 Accept Friend Request (Client 2)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/friends/{{friendshipId}}/accept
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{client2Token}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **As Client 2**, accept the pending friend request.
+  
+  Uses `{{friendshipId}}` from the sent request.
+}

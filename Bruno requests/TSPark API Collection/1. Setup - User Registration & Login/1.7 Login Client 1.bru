@@ -1,0 +1,46 @@
+meta {
+  name: 1.7 Login Client 1
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "client@tspark.com",
+    "password": "Client123!"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+      var jsonData = res.getBody();
+      bru.setVar('clientToken', jsonData.data.token);
+      console.log('Client token saved!');
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Login as Client.
+  
+  **Auto-saves token** to `{{clientToken}}` variable.
+  
+  Use this token for:
+  - Joining gyms and challenges
+  - Logging workouts
+  - Social features
+}

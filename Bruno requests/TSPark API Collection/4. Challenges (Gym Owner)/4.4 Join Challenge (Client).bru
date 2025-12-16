@@ -1,0 +1,25 @@
+meta {
+  name: 4.4 Join Challenge (Client)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/challenges/{{challengeId}}/join
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Requires Client token!**
+  
+  Join a challenge to start participating.
+}

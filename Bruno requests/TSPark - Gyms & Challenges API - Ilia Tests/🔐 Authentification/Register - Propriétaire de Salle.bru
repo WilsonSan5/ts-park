@@ -1,0 +1,58 @@
+meta {
+  name: Register - Propriétaire de Salle
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "gym.owner@tspark.com",
+    "password": "SecurePass123",
+    "firstName": "Pierre",
+    "lastName": "Gym Owner",
+    "role": "gym_owner"
+  }
+}
+
+script:post-response {
+  test("Inscription gym_owner réussie", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Rôle gym_owner confirmé", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.user.role).to.eql('gym_owner');
+  });
+  
+  test("Email correct", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.user.email).to.eql('gym.owner@tspark.com');
+  });
+  
+  // Sauvegarder les données pour les tests suivants
+  var jsonData = res.getBody();
+  if (jsonData.data && jsonData.data.user) {
+      bru.setVar("gym_owner_id", jsonData.data.user.id);
+      console.log("✅ Propriétaire de salle créé:", jsonData.data.user.email);
+      console.log("🏋️ ID gym_owner:", jsonData.data.user.id);
+      console.log("👤 Nom complet:", jsonData.data.user.firstName, jsonData.data.user.lastName);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Créer un nouveau propriétaire de salle de sport
+}

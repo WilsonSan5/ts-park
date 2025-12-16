@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { Challenge } from './Challenge';
+import { Workout } from './Workout';
 
 export enum ExerciseDifficulty {
   BEGINNER = 'beginner',
@@ -67,4 +68,7 @@ export class Exercise {
 
   @ManyToMany(() => Challenge, (challenge) => challenge.recommendedExercises)
   challenges: Challenge[];
+
+  @ManyToMany(() => Workout, (workout) => workout.exercises)
+  workouts: Workout[];
 }

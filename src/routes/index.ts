@@ -6,8 +6,8 @@ import gymRoutes from './gym.routes';
 import challengeRoutes from './challenge.routes';
 import workoutRoutes from './workout.routes';
 import socialRoutes from './social.routes';
+import badgeRoutes from './badge.routes';
 // Import other routes as they are implemented
-// import badgeRoutes from './badge.routes';
 
 /**
  * 🎓 LEARNING: Main Router (Central Route Registration)
@@ -73,12 +73,12 @@ router.use('/users', userRoutes);
 // ✅ EXERCISE ROUTES (Phase 6 - Already completed)
 router.use('/exercises', exerciseRoutes);
 
-// ✅ WORKOUT ROUTES
-router.use('/workouts', workoutRoutes);
 
 // Register other routes as they are implemented
 router.use('/gyms', gymRoutes);
 router.use('/challenges', challengeRoutes);
+router.use('/workouts', workoutRoutes);
+router.use('/badges', badgeRoutes);
 
 // ✅ SOCIAL/FRIENDSHIP ROUTES (Phase 9 - COMPLETED!)
 router.use('/friends', socialRoutes);
@@ -91,8 +91,6 @@ router.use('/friends', socialRoutes);
 // - POST   /api/friends/:id/accept      (accept friend request)
 // - POST   /api/friends/:id/reject      (reject friend request)
 // - DELETE /api/friends/:id             (remove friend)
-
-// router.use('/badges', badgeRoutes);
 
 /**
  * 🎓 ROUTE REGISTRATION ORDER

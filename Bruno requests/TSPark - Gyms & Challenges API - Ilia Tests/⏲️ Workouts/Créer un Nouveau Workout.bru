@@ -1,0 +1,59 @@
+meta {
+  name: Créer un Nouveau Workout
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/workouts
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{client_token}}
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyYTcyODIzZC1hMWVlLTQ2NzMtOGVkMC02MDhmMDAzM2VjOTQiLCJlbWFpbCI6Imd5bS5vd25lckB0c3BhcmsuY29tIiwicm9sZSI6Imd5bV9vd25lciIsImlhdCI6MTc2NTc0MzMxOSwiZXhwIjoxNzY1ODI5NzE5fQ._wg-XR3gaDib4zKHtzNR2JWRVR9Mpq3NW_SQ3vccGEY
+}
+
+body:json {
+  {
+    "name": "Pecs, épaule, triceps",
+    "description": "À faire 2 fois par semaine pour muscler le haut du corps.",
+    "duration": 70
+  }
+}
+
+script:post-response {
+  test("Workout créé avec succès", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Données du workout reçues", function () {
+      var jsonData = res.getBody();
+      expect(jsonData).to.have.property('id');
+      expect(jsonData).to.have.property('name');
+      expect(jsonData).to.have.property('duration');
+      expect(jsonData).to.have.property('userId');
+  });
+  
+  // Sauvegarder l'ID du workout créé
+  var jsonData = res.getBody();
+  if (jsonData && jsonData.id) {
+      bru.setVar("new_workout_id", jsonData.id);
+      console.log("✅ Workout créé:", jsonData.name);
+      console.log("🆔 ID:", jsonData.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  Créer un nouveau workout avec nom, description et durée
+}

@@ -80,15 +80,38 @@ export interface ChallengeProgress {
   completionPercentage: number;
 }
 
+export interface WorkoutExercise {
+  exerciseIds: string;
+  repetitions: number;
+  sets: number;
+  restPeriods: number | null;
+  weight: number | null;
+}
+
 export interface Workout {
   name: string;
   description: string;
-  difficulty: string;
   duration: number;
   caloriesBurned: number;
-  exercises: Array<number>;
+  exercises: Array<WorkoutExercise>;
   createdAt: Date;
   userId: string;
+}
+
+export interface Badge {
+  name: string;
+  description: string;
+  icon: string;
+  pointsValue: number;
+  isActive: boolean;
+  createdAt: Date;
+  createdBy: string;
+}
+
+export interface BadgeAssignment {
+  badgeId: string;
+  userId: string;
+  givenAt: Date;
 }
 
 // Extend Express Request to include user

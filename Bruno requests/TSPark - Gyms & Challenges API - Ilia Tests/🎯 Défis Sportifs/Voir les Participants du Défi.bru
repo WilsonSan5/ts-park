@@ -1,0 +1,37 @@
+meta {
+  name: Voir les Participants du Défi
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/challenges/{{new_challenge_id}}/participants
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{gym_owner_token}}
+}
+
+script:post-response {
+  test("Liste des participants", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Au moins un participant", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.be.an('array');
+      expect(jsonData.data.length).to.be.at.least(1);
+  });
+  
+  console.log("👥 Nombre de participants:", res.getBody().data.length);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Voir la liste des participants d'un défi
+}

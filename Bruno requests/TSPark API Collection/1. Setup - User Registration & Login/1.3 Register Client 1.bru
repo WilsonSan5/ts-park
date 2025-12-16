@@ -1,0 +1,48 @@
+meta {
+  name: 1.3 Register Client 1
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "client@tspark.com",
+    "password": "Client123!",
+    "firstName": "John",
+    "lastName": "Doe",
+    "role": "client"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+      var jsonData = res.getBody();
+      bru.setVar('clientUserId', jsonData.data.user.id);
+      console.log('Client created with ID:', jsonData.data.user.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Creates a Client account.
+  
+  Clients can:
+  - Join gyms
+  - Participate in challenges
+  - Log workouts
+  - Add friends
+  - View leaderboards
+}

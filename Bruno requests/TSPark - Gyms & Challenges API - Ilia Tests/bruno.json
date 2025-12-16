@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "TSPark - Gyms & Challenges API - Ilia Tests",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,23 @@
+meta {
+  name: 3.3 Get Gym by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/gyms/{{gymId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Get gym details by ID.
+}

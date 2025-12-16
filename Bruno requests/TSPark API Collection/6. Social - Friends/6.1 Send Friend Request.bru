@@ -1,0 +1,42 @@
+meta {
+  name: 6.1 Send Friend Request
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/friends/request
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "addresseeId": "{{client2UserId}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+      var jsonData = res.getBody();
+      if (jsonData.data && jsonData.data.id) {
+          bru.setVar('friendshipId', jsonData.data.id);
+          console.log('Friendship request created with ID:', jsonData.data.id);
+      }
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  **Client 1 sends friend request to Client 2**
+  
+  Uses `{{client2UserId}}` - make sure Client 2 is registered first!
+}

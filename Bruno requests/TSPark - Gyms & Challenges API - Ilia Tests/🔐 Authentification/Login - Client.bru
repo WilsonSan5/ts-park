@@ -1,0 +1,50 @@
+meta {
+  name: Login - Client
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "nouveauclient@tspark.com",
+    "password": "SecurePass123"
+  }
+}
+
+script:post-response {
+  test("Connexion réussie", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Token reçu", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.have.property('token');
+  });
+  
+  // Sauvegarder le token client
+  var jsonData = res.getBody();
+  if (jsonData.data && jsonData.data.token) {
+      bru.setVar("client_token", jsonData.data.token);
+      bru.setVar("client_id", jsonData.data.user.id);
+      console.log("✅ Connecté comme client:", jsonData.data.user.email);
+      console.log("🔑 Token client sauvegardé");
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Connexion avec le rôle client pour participer aux défis et créer des workouts
+}

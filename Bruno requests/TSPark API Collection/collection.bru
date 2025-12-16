@@ -1,0 +1,34 @@
+meta {
+  name: TSPark API Collection
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  base_url: http://localhost:3000/api
+  superAdminToken: 
+  gymOwnerToken: 
+  clientToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI5NjVmODNkMi02YWQwLTQ1ODItYTZjZS03ODc5MWQ4NjE3YWUiLCJlbWFpbCI6ImNsaWVudEB0c3BhcmsuY29tIiwicm9sZSI6ImNsaWVudCIsImlhdCI6MTc2NTgzOTc4OCwiZXhwIjoxNzY1OTI2MTg4fQ.zEfSto-RekgJxJwczeuz8N5_uapyz1K2G7s8zi6VN-M
+  client2Token: 
+  gymId: 
+  exerciseId: 
+  challengeId: 
+  clientUserId: 
+  client2UserId: 
+  friendshipId: 
+  badgeId: 
+}
+
+docs {
+  Complete API collection for TSPark fitness challenge platform. Includes authentication, user management, gyms, exercises, challenges, workouts, and social features.
+  
+  ## Testing Order
+  1. Start with '1. Setup' folder - Register users and login
+  2. Proceed to '2. Exercises' - Create exercises (Super Admin)
+  3. Then '3. Gyms' - Create and manage gyms (Gym Owner)
+  4. Then '4. Challenges' - Create challenges (Gym Owner)
+  5. Then '5. Workouts' - Log workouts (Client)
+  6. Finally '6. Social' - Friend features (All users)
+}

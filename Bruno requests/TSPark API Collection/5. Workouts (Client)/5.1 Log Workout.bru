@@ -1,0 +1,49 @@
+meta {
+  name: 5.1 Log Workout
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/workouts
+  body: json
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{clientToken}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Morning Strength Session",
+    "description": "Great leg day workout focusing on squats",
+    "difficulty": "intermediate",
+    "duration": 45,
+    "caloriesBurned": 350,
+    "exercises": [
+      {
+        "exerciseId": "{{exerciseId}}",
+        "sets": 4,
+        "reps": 10,
+        "weight": 80
+      }
+    ]
+  }
+}
+
+vars:pre-request {
+  : 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  **Requires Client token!**
+  
+  Log a workout session. This contributes to challenge progress.
+}

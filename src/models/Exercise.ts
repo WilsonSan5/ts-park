@@ -69,6 +69,6 @@ export class Exercise {
   @ManyToMany(() => Challenge, (challenge) => challenge.recommendedExercises)
   challenges: Challenge[];
 
-  @ManyToMany(() => Workout, (workout) => workout.exercises)
-  workouts: Workout[];
+  // @ManyToMany(() => Workout, (workout) => workout.exercices)
+  // workouts: Workout[];
 }

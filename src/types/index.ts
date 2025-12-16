@@ -80,22 +80,23 @@ export interface ChallengeProgress {
   completionPercentage: number;
 }
 
+
 export interface WorkoutExercise {
-  exerciseIds: string;
-  repetitions: number;
+  exerciseId: string;
+  reps: number;
   sets: number;
-  restPeriods: number | null;
+  restTime: number | null;
   weight: number | null;
 }
 
 export interface Workout {
   name: string;
-  description: string;
+  description?: string;
   duration: number;
   caloriesBurned: number;
-  exercises: Array<WorkoutExercise>;
-  createdAt: Date;
   userId: string;
+  exercises: WorkoutExercise[];
+  createdAt: Date;
 }
 
 export interface Badge {

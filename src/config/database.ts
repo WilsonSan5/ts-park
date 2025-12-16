@@ -8,6 +8,7 @@ import { Exercise } from '../models/Exercise';
 import { Challenge } from '../models/Challenge';
 import { Participation } from '../models/Participation';
 import { Workout } from '../models/Workout';
+import { WorkoutExercise } from '../models/WorkoutExercice';
 import { Badge } from '../models/Badge';
 import { BadgeRule } from '../models/BadgeRule';
 import { UserBadge } from '../models/UserBadge';
@@ -30,6 +31,7 @@ export const AppDataSource = new DataSource({
     Challenge,
     Participation,
     Workout,
+    WorkoutExercise,
     Badge,
     BadgeRule,
     UserBadge,

@@ -34,7 +34,7 @@ export class BadgeController {
             }
 
             if (!name || !description || !icon || !pointsValue) {
-                return res.status(400).json({ message: 'Missing required fields' });
+                return res.status(400).json({success: false, message: 'Missing required fields' });
             }
 
             const badgeData: Badge = {
@@ -49,37 +49,41 @@ export class BadgeController {
             const badge = await this.badgeService.createBadge(badgeData);
             return res.status(201).json(badge);
         } catch (error: any) {
-            return res.status(500).json({ message: error.message || 'Failed to create badge' });
+            return res.status(500).json({success: false, message: error.message || 'Failed to create badge' });
         }
     }
 
     async assignBadge(req: Request, res: Response) {
-    // Check Permissions
-    const superAdminId = req.user!.userId;
-    const userRepository = AppDataSource.getRepository(User);
-    const creator = await userRepository.findOne({ where: { id: superAdminId } });
-    if (!creator || creator.role !== UserRole.SUPER_ADMIN) {
-        throw new Error('Only super administrators can assign badges');
+        try {
+            // Check Permissions
+            const superAdminId = req.user!.userId;
+            const userRepository = AppDataSource.getRepository(User);
+            const creator = await userRepository.findOne({ where: { id: superAdminId } });
+            if (!creator || creator.role !== UserRole.SUPER_ADMIN) {
+                throw new Error('Only super administrators can assign badges');
+            }
+
+            const { badgeId, userId } = req.body;
+            const badgeAssignmentData: BadgeAssignment = {
+                badgeId,
+                userId,
+                givenAt: new Date()
+            };
+
+            const assignedBadge = await this.badgeService.assignBadge(badgeAssignmentData);
+            return res.status(201).json(assignedBadge);
+        } catch (error: any) {
+            return res.status(500).json({success: false, message: error.message || 'Failed to assign badge' });
+        }
     }
-
-    const { badgeId, userId } = req.body;
-    const badgeAssignmentData: BadgeAssignment = {
-        badgeId,
-        userId,
-        givenAt: new Date()
-    };
-
-    const assignedBadge = await this.badgeService.assignBadge(badgeAssignmentData);
-    return res.status(201).json(assignedBadge);
-}
 
     async getMyBadges(req: Request, res: Response) {
-    try {
-        const userId = req.user!.userId;
-        const badges = await this.badgeService.getMyBadges(userId);
-        return res.status(200).json(badges);
-    } catch (error: any) {
-        return res.status(500).json({ message: error.message || 'Failed to retrieve workouts' });
+        try {
+            const userId = req.user!.userId;
+            const badges = await this.badgeService.getMyBadges(userId);
+            return res.status(200).json(badges);
+        } catch (error: any) {
+            return res.status(500).json({success: false, message: error.message || 'Failed to retrieve badges' });
+        }
     }
-}
 }

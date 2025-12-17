@@ -178,8 +178,6 @@
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
             },
             "body": {
               "mode": "raw",
@@ -212,8 +210,6 @@
             "description": "Login as Gym Owner (seeder account).\n\n**Auto-saves token** to `{{gymOwnerToken}}`\n\nCredentials from seeder: gymowner@tspark.com / GymOwner123!",
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
             },
@@ -250,8 +246,6 @@
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
             },
             "body": {
               "mode": "raw",
@@ -276,9 +270,9 @@
           ]
         },
         {
-          "name": "1.5 Get Current User Profile",
+          "name": "1.8 Login Client 2",
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" }
             ],
@@ -313,7 +307,7 @@
         {
           "name": "1.9 Get Current User Profile",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
             ],
@@ -1215,4 +1209,3 @@
     { "key": "passwordResetToken", "value": "", "type": "default" }
   ]
 }
-

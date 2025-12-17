@@ -1,79 +1,118 @@
-# TSPark - API de Gestion de Salles de Sport
+# TSPark - Fitness Challenge Platform API
 
-### 1. Installation
+A RESTful API for managing gyms, fitness challenges, workouts, and social features. Built with TypeScript, Express, TypeORM, and PostgreSQL.
+
+## Quick Start
+
+### Using Docker (Recommended)
 ```bash
-# Installer les dépendances
+docker-compose up
+```
+- API: http://localhost:3000
+- Adminer (DB UI): http://localhost:8080
+
+### Local Development
+```bash
 npm install
-
-# Créer la base de données
-createdb tspark_db
-
-# Lancer le serveur
+cp .env.example .env  # Configure your database
 npm run dev
 ```
 
-### 2. Configuration
-Créer un fichier `.env` avec :
+## Environment Variables
+
 ```bash
-PORT=3000
-DB_HOST=localhost
+# Database
+DB_HOST=postgres          # 'localhost' for local dev
 DB_PORT=5432
 DB_USERNAME=postgres
-DB_PASSWORD=votre_mot_de_passe
+DB_PASSWORD=postgres
 DB_DATABASE=tspark_db
-JWT_SECRET=votre-clé-secrète
+
+# Authentication
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=24h
+
+# Server
+NODE_ENV=development
+PORT=3000
 ```
 
-## 📋 Fonctionnalités
+## Features
 
-### 🔐 Authentification
-- Inscription utilisateur (client, propriétaire de salle, admin)
-- Connexion avec token JWT
-- Gestion des rôles et permissions
+### Authentication & Users
+- JWT-based authentication with email verification
+- Password reset via email
+- Role-based access control (super_admin, gym_owner, client)
 
-### Gestion des Salles
-- Créer une salle (propriétaire uniquement)
-- Approuver/rejeter les salles (admin uniquement)
-- Lister les salles approuvées
-- Gérer les équipements et capacité
+### Gyms & Challenges
+- Gym owners create and manage gyms (pending admin approval)
+- Create fitness challenges with recommended exercises
+- Track participant progress and award points
 
-### Défis
-- Créer des défis dans les salles
-- Rejoindre/quitter des défis
-- Suivre la progression des participants
-- Système de points et récompenses
+### Workouts & Progress
+- Log workouts linked to challenge participation
+- Track calories, duration, and exercise completion
+- Automatic progress calculation
 
-### Utilisateurs
-- Profils utilisateur complets
-- Gestion des permissions par rôle
-- Statistiques et historique
+### Badges & Gamification
+- Create badges with custom award rules
+- Automatic badge assignment based on achievements
+- Points system for motivation
 
-## Structure du Code
+### Social
+- Friend requests and connections
+- View friends' progress and achievements
+
+## API Endpoints
+
+| Resource | Endpoints |
+|----------|-----------|
+| Auth | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` |
+| Users | `GET /api/users`, `PATCH /api/users/:id` |
+| Gyms | `POST /api/gyms`, `GET /api/gyms`, `PATCH /api/gyms/:id/approve` |
+| Exercises | `POST /api/exercises`, `GET /api/exercises` |
+| Challenges | `POST /api/challenges`, `POST /api/challenges/:id/join` |
+| Workouts | `POST /api/workouts`, `GET /api/workouts/stats` |
+| Badges | `POST /api/badges`, `GET /api/badges/my-badges` |
+| Friends | `POST /api/friends/request`, `POST /api/friends/:id/accept` |
+
+## Commands
+
+```bash
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run lint             # Run ESLint
+npm run format           # Format with Prettier
+
+# Database
+npm run migration:generate -- src/migrations/Name
+npm run migration:run
+npm run seed
+```
+
+## Project Structure
 
 ```
 src/
-├── models/         # Entités de base de données
-├── controllers/    # Gestion des requêtes HTTP
-├── services/       # Logique métier
-├── routes/         # Routes de l'API
-├── middleware/     # Authentification et autorisations
-└── config/         # Configuration base de données
+├── config/        # Database and environment config
+├── controllers/   # HTTP request handlers
+├── middleware/    # Auth, roles, validation
+├── models/        # TypeORM entities
+├── routes/        # API route definitions
+├── services/      # Business logic
+├── types/         # TypeScript types and enums
+└── utils/         # JWT, password, response helpers
 ```
 
-## 🧪 Tests avec Postman
+## Testing
 
-**Importer la collection** `postman/ilia-Personne-2.json`
+Import the Postman collection from `postman/` directory for API testing.
 
-## 🎛️ Commandes Utiles
+## Tech Stack
 
-```bash
-npm run dev      # Démarrer en mode développement
-npm run build    # Compiler pour la production
-npm start        # Démarrer la version compilée
-```
-
-## 🔑 Rôles Utilisateur
-
-- **`super_admin`** : Gère tout le système
-- **`gym_owner`** : Crée et gère ses salles
-- **`client`** : Participe aux défis
+- **Runtime**: Node.js + TypeScript
+- **Framework**: Express 5
+- **Database**: PostgreSQL + TypeORM
+- **Auth**: JWT + bcrypt
+- **Security**: Helmet, CORS, rate limiting
+- **Email**: Nodemailer

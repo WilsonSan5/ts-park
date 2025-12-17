@@ -1,7 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
 import { User } from './User';
 import { Exercise } from './Exercise';
-import { WorkoutExercise } from 'types/index';
 
 @Entity('workouts')
 export class Workout {
@@ -32,7 +31,12 @@ export class Workout {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToMany(() => Exercise)
-  exercises: WorkoutExercise[];
+  @ManyToMany(() => Exercise, (exercise) => exercise.workouts)
+  @JoinTable({
+    name: 'workout_exercises',
+    joinColumn: { name: 'workoutId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'exerciseId', referencedColumnName: 'id' },
+  })
+  exercises: Exercise[];
 
 }

@@ -10,6 +10,10 @@ get {
   auth: inherit
 }
 
+headers {
+  Authorization: Bearer {{gym_owner_token}}
+}
+
 script:post-response {
   test("Liste récupérée", function () {
       expect(res.getStatus()).to.equal(200);
@@ -32,6 +36,10 @@ script:post-response {
 
 settings {
   encodeUrl: true
+<<<<<<< HEAD
+  timeout: 0
+=======
+>>>>>>> fabfb9b (now get all workout only shows userś workout)
 }
 
 docs {

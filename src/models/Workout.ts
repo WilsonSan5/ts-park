@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { User } from './User';
-import { Exercise } from './Exercise';
+import { WorkoutExercise } from './WorkoutExercice';
 
 @Entity('workouts')
 export class Workout {
@@ -14,7 +14,7 @@ export class Workout {
   description?: string;
 
   @Column()
-  duration: number; // in minutes
+  duration: number; // en minutes
 
   @Column()
   caloriesBurned: number;
@@ -31,12 +31,6 @@ export class Workout {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToMany(() => Exercise, (exercise) => exercise.workouts)
-  @JoinTable({
-    name: 'workout_exercises',
-    joinColumn: { name: 'workoutId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'exerciseId', referencedColumnName: 'id' },
-  })
-  exercises: Exercise[];
-
+  @OneToMany(() => WorkoutExercise, workoutExercise => workoutExercise.workout, { cascade: true })
+  workoutExercises: WorkoutExercise[];
 }

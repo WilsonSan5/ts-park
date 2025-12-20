@@ -10,6 +10,16 @@ export const generateSecureToken = (length: number = 32): string => {
 };
 
 /**
+ * Hashes a token using SHA-256 for secure storage.
+ * SECURITY: Never store raw tokens in database - always hash first.
+ * @param token The raw token to hash
+ * @returns SHA-256 hash of the token
+ */
+export const hashToken = (token: string): string => {
+  return crypto.createHash('sha256').update(token).digest('hex');
+};
+
+/**
  * Calculates expiration date from current time.
  * @param hours Number of hours until expiration
  * @returns Date object representing expiration time

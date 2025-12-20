@@ -1,7 +1,8 @@
 import { AppDataSource } from '../config/database';
 import { Gym } from '../models/Gym';
 import { User } from '../models/User';
-import { UserRole, GymStatus } from '../types';
+import { UserRole, GymStatus, NotificationType } from '../types';
+import * as notificationService from './notification.service';
 
 const gymRepository = AppDataSource.getRepository(Gym);
 const userRepository = AppDataSource.getRepository(User);
@@ -102,8 +103,27 @@ export const updateGym = async (
     throw new Error('Only the gym owner or super administrators can update this gym');
   }
 
-  // Update fields
-  Object.assign(gym, data);
+  // Security: Whitelist allowed fields to prevent mass assignment vulnerability
+  // Protected fields: id, ownerId, status (status changed via approveGym), createdAt, updatedAt
+  const allowedFields = [
+    'name',
+    'description',
+    'address',
+    'city',
+    'phone',
+    'email',
+    'capacity',
+    'equipment',
+    'specializedExerciseTypes'
+  ] as const;
+
+  // Only update whitelisted fields - type-safe assignment
+  type AllowedField = typeof allowedFields[number];
+  for (const field of allowedFields) {
+    if (data[field] !== undefined) {
+      (gym[field] as Gym[AllowedField]) = data[field] as Gym[AllowedField];
+    }
+  }
 
   return await gymRepository.save(gym);
 };
@@ -121,14 +141,27 @@ export const approveGym = async (
     throw new Error('Only super administrators can approve gyms');
   }
 
-  const gym = await gymRepository.findOne({ where: { id } });
+  const gym = await gymRepository.findOne({
+    where: { id },
+    relations: ['owner']
+  });
   if (!gym) {
     throw new Error('Gym not found');
   }
 
   gym.status = GymStatus.APPROVED;
 
-  return await gymRepository.save(gym);
+  const savedGym = await gymRepository.save(gym);
+
+  // Send notification to gym owner
+  await notificationService.createNotification(
+    gym.ownerId,
+    NotificationType.GYM_APPROVED,
+    'Gym Approved!',
+    `Your gym "${gym.name}" has been approved and is now active`
+  );
+
+  return savedGym;
 };
 
 /**

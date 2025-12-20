@@ -6,9 +6,12 @@ import {
   verifyEmail as verifyEmailService,
   resendVerificationEmail,
   requestPasswordReset,
-  resetPassword as resetPasswordService
+  resetPassword as resetPasswordService,
+  blacklistToken
 } from '../services/auth.service';
+import { decodeToken } from '../utils/jwt';
 import { sendSuccess, sendError, sendCreated } from '../utils/response';
+import { asyncHandler } from '../utils/async-handler';
 import { UserRole } from '../types';
 
 /**
@@ -17,98 +20,48 @@ import { UserRole } from '../types';
  * Elevated roles (gym_owner, super_admin) must be assigned by admin.
  * @route POST /api/auth/register
  */
-export const register = async (req: Request, res: Response) => {
-  try {
-    const { email, password, firstName, lastName } = req.body;
+export const register = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password, firstName, lastName } = req.body;
 
-    // Input validation
-    if (!email || !password || !firstName || !lastName) {
-      return sendError(res, 'All fields are required (email, password, firstName, lastName)', 400);
-    }
+  // SECURITY: Public registration always creates CLIENT role
+  // Elevated roles must be assigned through admin endpoints
+  const user = await registerUser(email, password, firstName, lastName, UserRole.CLIENT);
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return sendError(res, 'Invalid email format', 400);
-    }
-
-    // Password strength validation
-    if (password.length < 8) {
-      return sendError(res, 'Password must be at least 8 characters long', 400);
-    }
-
-    // SECURITY: Public registration always creates CLIENT role
-    // Elevated roles must be assigned through admin endpoints
-    const user = await registerUser(email, password, firstName, lastName, UserRole.CLIENT);
-
-    return sendCreated(res, 'User registered successfully', { user });
-
-  } catch (error: any) {
-    // Handle duplicate email error
-    if (error.message.includes('already exists')) {
-      return sendError(res, error.message, 409); // 409 = Conflict
-    }
-
-    return sendError(res, error.message || 'Registration failed', 500);
-  }
-};
+  return sendCreated(res, 'User registered successfully', { user });
+});
 
 /**
  * Handles user login.
  * Validates credentials and returns JWT token.
  * @route POST /api/auth/login
  */
-export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
 
-    // Input validation
-    if (!email || !password) {
-      return sendError(res, 'Email and password are required', 400);
-    }
+  // Call service to authenticate user
+  const result = await loginUser(email, password);
 
-    // Call service to authenticate user
-    const result = await loginUser(email, password);
-
-    return sendSuccess(res, 'Login successful', result);
-
-  } catch (error: any) {
-    // Handle authentication errors
-    if (error.message.includes('Invalid') || error.message.includes('not active')) {
-      return sendError(res, error.message, 401); // 401 = Unauthorized
-    }
-
-    return sendError(res, error.message || 'Login failed', 500);
-  }
-};
+  return sendSuccess(res, 'Login successful', result);
+});
 
 /**
  * Retrieves current authenticated user profile.
  * IMPORTANT: Requires authenticateToken middleware.
  * @route GET /api/auth/me
  */
-export const getMe = async (req: Request, res: Response) => {
-  try {
-    // Get userId from authenticated request (set by middleware)
-    const userId = (req as any).user?.userId;
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
+  // Get userId from authenticated request (set by middleware)
+  const userId = req.user?.userId;
 
-    if (!userId) {
-      return sendError(res, 'User not authenticated', 401);
-    }
-
-    // Fetch fresh user data from database
-    const user = await getCurrentUser(userId);
-
-    return sendSuccess(res, 'User profile retrieved successfully', { user });
-
-  } catch (error: any) {
-    if (error.message.includes('not found')) {
-      return sendError(res, 'User not found', 404); // 404 = Not Found
-    }
-
-    return sendError(res, error.message || 'Failed to retrieve user profile', 500);
+  if (!userId) {
+    return sendError(res, 'User not authenticated', 401);
   }
-};
+
+  // Fetch fresh user data from database
+  const user = await getCurrentUser(userId);
+
+  return sendSuccess(res, 'User profile retrieved successfully', { user });
+});
 
 // ========== EMAIL VERIFICATION ==========
 
@@ -116,78 +69,47 @@ export const getMe = async (req: Request, res: Response) => {
  * Verifies user email using token from query or body.
  * @route GET /api/auth/verify-email?token=xxx OR POST with body
  */
-export const verifyEmail = async (req: Request, res: Response) => {
-  try {
-    // Accept token from query (GET) or body (POST)
-    const token = req.query.token as string || req.body.token;
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  // Accept token from query (GET) or body (POST)
+  const token = req.query.token as string || req.body.token;
 
-    if (!token) {
-      return sendError(res, 'Verification token is required', 400);
-    }
-
-    const user = await verifyEmailService(token);
-
-    return sendSuccess(res, 'Email verified successfully', { user });
-
-  } catch (error: any) {
-    if (error.message.includes('Invalid') || error.message.includes('expired')) {
-      return sendError(res, error.message, 400);
-    }
-
-    return sendError(res, error.message || 'Email verification failed', 500);
+  if (!token) {
+    return sendError(res, 'Verification token is required', 400);
   }
-};
+
+  const user = await verifyEmailService(token);
+
+  return sendSuccess(res, 'Email verified successfully', { user });
+});
 
 /**
  * Resends verification email to authenticated user.
  * Requires authentication.
  * @route POST /api/auth/resend-verification
  */
-export const resendVerification = async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user?.userId;
+export const resendVerification = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
 
-    if (!userId) {
-      return sendError(res, 'User not authenticated', 401);
-    }
-
-    await resendVerificationEmail(userId);
-
-    return sendSuccess(res, 'Verification email sent successfully');
-
-  } catch (error: any) {
-    if (error.message.includes('already verified')) {
-      return sendError(res, error.message, 400);
-    }
-
-    if (error.message.includes('not found')) {
-      return sendError(res, error.message, 404);
-    }
-
-    return sendError(res, error.message || 'Failed to resend verification email', 500);
+  if (!userId) {
+    return sendError(res, 'User not authenticated', 401);
   }
-};
+
+  await resendVerificationEmail(userId);
+
+  return sendSuccess(res, 'Verification email sent successfully');
+});
 
 // ========== PASSWORD RESET ==========
 
 /**
  * Initiates password reset process.
  * Sends reset email if account exists (always returns success for security).
+ * SECURITY: Always returns success - never reveals if email exists in system.
  * @route POST /api/auth/forgot-password
  */
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      return sendError(res, 'Email is required', 400);
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return sendError(res, 'Invalid email format', 400);
-    }
 
     await requestPasswordReset(email);
 
@@ -197,8 +119,12 @@ export const forgotPassword = async (req: Request, res: Response) => {
       'If an account with that email exists, a password reset link has been sent'
     );
 
-  } catch (error: any) {
-    return sendError(res, 'Failed to process password reset request', 500);
+  } catch {
+    // SECURITY: Still return success even on error to prevent email enumeration
+    return sendSuccess(
+      res,
+      'If an account with that email exists, a password reset link has been sent'
+    );
   }
 };
 
@@ -206,28 +132,51 @@ export const forgotPassword = async (req: Request, res: Response) => {
  * Resets password using reset token.
  * @route POST /api/auth/reset-password
  */
-export const resetPassword = async (req: Request, res: Response) => {
-  try {
-    const { token, newPassword } = req.body;
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { token, newPassword } = req.body;
 
-    if (!token || !newPassword) {
-      return sendError(res, 'Token and new password are required', 400);
-    }
+  await resetPasswordService(token, newPassword);
 
-    // Validate password length
-    if (newPassword.length < 8) {
-      return sendError(res, 'Password must be at least 8 characters long', 400);
-    }
+  return sendSuccess(res, 'Password reset successfully');
+});
 
-    await resetPasswordService(token, newPassword);
+// ========== LOGOUT ==========
 
-    return sendSuccess(res, 'Password reset successfully');
+/**
+ * Logs out the current user by blacklisting their token.
+ * The token is added to a blacklist and will be rejected by the auth middleware.
+ * SECURITY: Token is invalidated server-side, preventing reuse even if stolen.
+ * @route POST /api/auth/logout
+ */
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  // Get userId from authenticated request (set by middleware)
+  const userId = req.user?.userId;
 
-  } catch (error: any) {
-    if (error.message.includes('Invalid') || error.message.includes('expired')) {
-      return sendError(res, error.message, 400);
-    }
-
-    return sendError(res, error.message || 'Password reset failed', 500);
+  if (!userId) {
+    return sendError(res, 'User not authenticated', 401);
   }
-};
+
+  // Extract the token from the Authorization header
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ')
+    ? authHeader.substring(7)
+    : authHeader;
+
+  if (!token) {
+    return sendError(res, 'No token provided', 400);
+  }
+
+  // Decode token to get expiration time
+  const decoded = decodeToken(token);
+  if (!decoded || !decoded.exp) {
+    return sendError(res, 'Invalid token', 400);
+  }
+
+  // Calculate expiration date from Unix timestamp
+  const expiresAt = new Date(decoded.exp * 1000);
+
+  // Add token to blacklist
+  await blacklistToken(token, userId, expiresAt);
+
+  return sendSuccess(res, 'Logged out successfully. Your token has been invalidated.');
+});

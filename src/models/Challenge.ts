@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm';
 import { ChallengeType, ChallengeDifficulty, ChallengeStatus, ChallengeObjectives } from '../types';
 import { User } from './User';
 import { Gym } from './Gym';
@@ -21,7 +21,7 @@ export class Challenge {
   @Column({ type: 'enum', enum: ChallengeDifficulty })
   difficulty: ChallengeDifficulty;
 
-  @Column({ type: 'enum', enum: ChallengeStatus, default: ChallengeStatus.ACTIVE })
+  @Column({ type: 'enum', enum: ChallengeStatus, default: ChallengeStatus.DRAFT })
   status: ChallengeStatus;
 
   @Column({ type: 'jsonb' }) // Store objectives as JSON
@@ -47,6 +47,9 @@ export class Challenge {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 
   // Relations
   @Column()

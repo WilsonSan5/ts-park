@@ -1,7 +1,8 @@
 import { AppDataSource } from '../config/database';
 import { Friendship } from '../models/Friendship';
 import { User } from '../models/User';
-import { FriendshipStatus } from '../types';
+import { FriendshipStatus, NotificationType } from '../types';
+import * as notificationService from './notification.service';
 
 const friendshipRepository = AppDataSource.getRepository(Friendship);
 const userRepository = AppDataSource.getRepository(User);
@@ -66,7 +67,17 @@ export const sendFriendRequest = async (
     status: FriendshipStatus.PENDING,
   });
 
-  return await friendshipRepository.save(friendship);
+  const savedFriendship = await friendshipRepository.save(friendship);
+
+  // Send notification to recipient
+  await notificationService.createNotification(
+    addresseeId,
+    NotificationType.FRIEND_REQUEST,
+    'New Friend Request',
+    `${requester.firstName} ${requester.lastName} sent you a friend request`
+  );
+
+  return savedFriendship;
 };
 
 /**
@@ -100,7 +111,17 @@ export const acceptFriendRequest = async (
   friendship.status = FriendshipStatus.ACCEPTED;
   friendship.respondedAt = new Date();
 
-  return await friendshipRepository.save(friendship);
+  const savedFriendship = await friendshipRepository.save(friendship);
+
+  // Send notification to requester
+  await notificationService.createNotification(
+    friendship.requesterId,
+    NotificationType.FRIEND_REQUEST,
+    'Friend Request Accepted',
+    `${friendship.addressee.firstName} ${friendship.addressee.lastName} accepted your friend request`
+  );
+
+  return savedFriendship;
 };
 
 /**

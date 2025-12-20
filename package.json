@@ -14,7 +14,12 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
-  "keywords": ["fitness", "challenges", "api", "typescript"],
+  "keywords": [
+    "fitness",
+    "challenges",
+    "api",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "description": "TSPark - Fitness Challenge Platform API",
@@ -31,6 +36,8 @@
     "nodemailer": "^7.0.10",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.27",
     "typescript": "^5.9.3",
     "uuid": "^13.0.0",
@@ -43,6 +50,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
     "@types/nodemailer": "^7.0.4",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "eslint": "^9.39.1",

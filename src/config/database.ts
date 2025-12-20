@@ -14,6 +14,7 @@ import { BadgeRule } from '../models/BadgeRule';
 import { UserBadge } from '../models/UserBadge';
 import { Friendship } from '../models/Friendship';
 import { Notification } from '../models/Notification';
+import { TokenBlacklist } from '../models/TokenBlacklist';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -37,6 +38,7 @@ export const AppDataSource = new DataSource({
     UserBadge,
     Friendship,
     Notification,
+    TokenBlacklist,
   ],
 });
 

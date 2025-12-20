@@ -1,13 +1,16 @@
+import { LessThan } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { User } from '../models/User';
+import { TokenBlacklist } from '../models/TokenBlacklist';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 import { UserRole } from '../types';
-import { generateSecureToken, getExpirationDate, isTokenExpired } from '../utils/tokens';
+import { generateSecureToken, hashToken, getExpirationDate, isTokenExpired } from '../utils/tokens';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email.service';
 
-// Get the User repository for database operations
+// Get repositories for database operations
 const userRepository = AppDataSource.getRepository(User);
+const tokenBlacklistRepository = AppDataSource.getRepository(TokenBlacklist);
 
 /**
  * Registers a new user with hashed password.
@@ -20,18 +23,21 @@ export const registerUser = async (
   firstName: string,
   lastName: string,
   role: UserRole = UserRole.CLIENT
-) => {
+): Promise<Omit<User, 'password'>> => {
   // Check for existing user
+  // SECURITY: Generic message to prevent email enumeration
   const existingUser = await userRepository.findOne({ where: { email } });
   if (existingUser) {
-    throw new Error('User with this email already exists');
+    throw new Error('Registration failed. Please check your information and try again.');
   }
 
   // SECURITY: Hash password before storage
   const hashedPassword = await hashPassword(password);
 
   // Generate email verification token
-  const emailVerificationToken = generateSecureToken();
+  // SECURITY: Store hashed token, send raw token to user
+  const rawVerificationToken = generateSecureToken();
+  const hashedVerificationToken = hashToken(rawVerificationToken);
 
   const user = userRepository.create({
     email,
@@ -39,14 +45,14 @@ export const registerUser = async (
     firstName,
     lastName,
     role,
-    emailVerificationToken,
+    emailVerificationToken: hashedVerificationToken,
   });
 
   await userRepository.save(user);
 
-  // Send verification email (non-blocking in dev)
+  // Send verification email with RAW token (non-blocking in dev)
   try {
-    await sendVerificationEmail(email, firstName, emailVerificationToken);
+    await sendVerificationEmail(email, firstName, rawVerificationToken);
   } catch (error) {
     console.error('Email send failed during registration:', error);
     // Continue registration even if email fails
@@ -63,7 +69,10 @@ export const registerUser = async (
  * Token expires in 24 hours.
  * @throws Error if credentials invalid or account inactive
  */
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<{ user: Omit<User, 'password'>; token: string }> => {
   // Find user by email
   const user = await userRepository.findOne({ where: { email } });
 
@@ -101,7 +110,9 @@ export const loginUser = async (email: string, password: string) => {
  * Fetches fresh data from database (token data may be stale).
  * @throws Error if user not found
  */
-export const getCurrentUser = async (userId: string) => {
+export const getCurrentUser = async (
+  userId: string
+): Promise<Omit<User, 'password'>> => {
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {
@@ -130,13 +141,15 @@ export const generateEmailVerification = async (userId: string): Promise<void> =
   }
 
   // Generate new token
-  const emailVerificationToken = generateSecureToken();
-  user.emailVerificationToken = emailVerificationToken;
+  // SECURITY: Store hashed token, send raw token to user
+  const rawToken = generateSecureToken();
+  const hashedToken = hashToken(rawToken);
+  user.emailVerificationToken = hashedToken;
 
   await userRepository.save(user);
 
-  // Send verification email
-  await sendVerificationEmail(user.email, user.firstName, emailVerificationToken);
+  // Send verification email with RAW token
+  await sendVerificationEmail(user.email, user.firstName, rawToken);
 };
 
 /**
@@ -147,7 +160,9 @@ export const generateEmailVerification = async (userId: string): Promise<void> =
  * @throws Error if token invalid or not found
  */
 export const verifyEmail = async (token: string): Promise<Omit<User, 'password'>> => {
-  const user = await userRepository.findOne({ where: { emailVerificationToken: token } });
+  // SECURITY: Hash incoming token to compare with stored hash
+  const hashedToken = hashToken(token);
+  const user = await userRepository.findOne({ where: { emailVerificationToken: hashedToken } });
 
   if (!user) {
     throw new Error('Invalid or expired verification token');
@@ -183,13 +198,15 @@ export const resendVerificationEmail = async (userId: string): Promise<void> => 
   }
 
   // Generate new token
-  const emailVerificationToken = generateSecureToken();
-  user.emailVerificationToken = emailVerificationToken;
+  // SECURITY: Store hashed token, send raw token to user
+  const rawToken = generateSecureToken();
+  const hashedToken = hashToken(rawToken);
+  user.emailVerificationToken = hashedToken;
 
   await userRepository.save(user);
 
-  // Send verification email
-  await sendVerificationEmail(user.email, user.firstName, emailVerificationToken);
+  // Send verification email with RAW token
+  await sendVerificationEmail(user.email, user.firstName, rawToken);
 };
 
 // ========== PASSWORD RESET ==========
@@ -209,16 +226,18 @@ export const requestPasswordReset = async (email: string): Promise<void> => {
   }
 
   // Generate reset token and set expiration (1 hour)
-  const passwordResetToken = generateSecureToken();
+  // SECURITY: Store hashed token, send raw token to user
+  const rawToken = generateSecureToken();
+  const hashedToken = hashToken(rawToken);
   const passwordResetExpires = getExpirationDate(1);
 
-  user.passwordResetToken = passwordResetToken;
+  user.passwordResetToken = hashedToken;
   user.passwordResetExpires = passwordResetExpires;
 
   await userRepository.save(user);
 
-  // Send password reset email
-  await sendPasswordResetEmail(user.email, user.firstName, passwordResetToken);
+  // Send password reset email with RAW token
+  await sendPasswordResetEmail(user.email, user.firstName, rawToken);
 };
 
 /**
@@ -229,7 +248,9 @@ export const requestPasswordReset = async (email: string): Promise<void> => {
  * @throws Error if token invalid, expired, or password too weak
  */
 export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
-  const user = await userRepository.findOne({ where: { passwordResetToken: token } });
+  // SECURITY: Hash incoming token to compare with stored hash
+  const hashedToken = hashToken(token);
+  const user = await userRepository.findOne({ where: { passwordResetToken: hashedToken } });
 
   if (!user) {
     throw new Error('Invalid or expired reset token');
@@ -254,4 +275,55 @@ export const resetPassword = async (token: string, newPassword: string): Promise
   user.passwordResetExpires = undefined;
 
   await userRepository.save(user);
+};
+
+// ========== TOKEN BLACKLIST ==========
+
+/**
+ * Adds a token to the blacklist, effectively logging out the user.
+ * The token will be rejected by the auth middleware until it expires.
+ * @param token The JWT token to blacklist
+ * @param userId The user ID who owns the token
+ * @param expiresAt When the token naturally expires
+ */
+export const blacklistToken = async (
+  token: string,
+  userId: string,
+  expiresAt: Date
+): Promise<void> => {
+  // Check if token is already blacklisted
+  const existing = await tokenBlacklistRepository.findOne({ where: { token } });
+  if (existing) {
+    return; // Already blacklisted, no action needed
+  }
+
+  const blacklistEntry = tokenBlacklistRepository.create({
+    token,
+    userId,
+    expiresAt,
+  });
+
+  await tokenBlacklistRepository.save(blacklistEntry);
+};
+
+/**
+ * Checks if a token has been blacklisted (user logged out).
+ * @param token The JWT token to check
+ * @returns true if token is blacklisted, false otherwise
+ */
+export const isTokenBlacklisted = async (token: string): Promise<boolean> => {
+  const entry = await tokenBlacklistRepository.findOne({ where: { token } });
+  return !!entry;
+};
+
+/**
+ * Cleans up expired tokens from the blacklist.
+ * Should be run periodically (e.g., daily cron job) to prevent table bloat.
+ * @returns Number of tokens removed
+ */
+export const cleanupExpiredTokens = async (): Promise<number> => {
+  const result = await tokenBlacklistRepository.delete({
+    expiresAt: LessThan(new Date()),
+  });
+  return result.affected || 0;
 };

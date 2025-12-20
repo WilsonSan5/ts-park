@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "TSPark API Collection",
-    "description": "Complete API collection for TSPark fitness challenge platform.\n\n## User Roles\n- **Super Admin**: Full platform access, manage exercises, approve gyms, manage users\n- **Gym Owner**: Create/manage gyms, create challenges\n- **Client**: Join gyms/challenges, log workouts, social features\n\n## Testing Flow\n1. Start with **0. Health Check** to verify API is running\n2. Run **1. Setup** folder sequentially (register + login all users)\n3. Test features by role:\n   - Super Admin: Exercises, Gym Approval, Badges, Users\n   - Gym Owner: Gyms, Challenges\n   - Client: Join Challenges, Workouts, Social\n4. Test new **Auth Features**: Email Verification, Password Reset\n\n## Variables Auto-saved\nTokens and IDs are automatically saved by test scripts for seamless flow.",
+    "description": "Complete API collection for TSPark fitness challenge platform.\n\n## Testing Flow (Follow This Order!)\n\nThis collection is organized in sequential order. Run folders 0-7 in order for a complete test flow:\n\n1. **0. Health Check** - Verify API is running\n2. **1. Setup - Login All Users** - Get JWT tokens for seeded users\n3. **2. Super Admin: Exercises** - Create exercises (required for challenges)\n4. **3. Gym Owner: Gyms** - Create gym (starts as PENDING)\n5. **4. Super Admin: Approve Gym** - Approve gym (PENDING → APPROVED)\n6. **5. Gym Owner: Challenges** - Create & start challenges\n7. **6. Client: Join & Participate** - Join challenges, log workouts\n8. **7. Social & Badges** - Friend requests, badges\n9. **99. Destructive Operations** - DELETE endpoints (run manually)\n\n## User Roles\n- **Super Admin**: Full platform access, create exercises, approve gyms, manage badges\n- **Gym Owner**: Create/manage gyms, create challenges\n- **Client**: Join gyms/challenges, log workouts, social features\n\n## Seeder Credentials\nRun `npm run seed` first to create these users:\n- admin@tspark.com / SuperAdmin123!\n- gymowner@tspark.com / GymOwner123!\n- client1@tspark.com / Client123!\n- client2@tspark.com / Client123!\n\n## API Documentation\nSwagger UI: http://localhost:3000/api/docs",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -9,13 +9,11 @@
       "name": "0. Health Check",
       "item": [
         {
-          "name": "Health Check",
+          "name": "0.1 Health Check",
           "request": {
             "method": "GET",
             "header": [],
-            "auth": {
-              "type": "noauth"
-            },
+            "auth": { "type": "noauth" },
             "description": "Check if the API is running. Run this first!",
             "url": {
               "raw": "http://localhost:3000/health",
@@ -24,156 +22,34 @@
               "path": ["health"]
             }
           }
+        },
+        {
+          "name": "0.2 Swagger Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": { "type": "noauth" },
+            "description": "View interactive API docs at http://localhost:3000/api/docs",
+            "url": {
+              "raw": "http://localhost:3000/api/docs.json",
+              "protocol": "http",
+              "host": ["localhost:3000"],
+              "path": ["api", "docs.json"]
+            }
+          }
         }
       ]
     },
     {
-      "name": "1. Setup - User Registration & Login",
+      "name": "1. Setup - Login All Users",
+      "description": "Login with seeded users to get JWT tokens.\n\n**PREREQUISITE**: Run `npm run seed` first!\n\nThis creates:\n- Super Admin (admin@tspark.com)\n- Gym Owner (gymowner@tspark.com)\n- Client 1 (client1@tspark.com)\n- Client 2 (client2@tspark.com)",
       "item": [
         {
-          "name": "1.1 Register New User (Test Registration)",
+          "name": "1.1 Login Super Admin",
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "**Test user registration endpoint.**\n\nNote: Public registration always creates CLIENT role.\nSuper Admin and Gym Owner roles are created via seeder (npm run seed).\n\nThis request tests the registration flow with a new user.",
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@tspark.com\",\n  \"password\": \"NewUser123!\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('superAdminUserId', jsonData.data.user.id);",
-                  "    console.log('Super Admin created:', jsonData.data.user.email);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.2 Register Another User (Test Registration)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "**Test user registration endpoint with another user.**\n\nNote: Public registration always creates CLIENT role.\nGym Owner role is assigned by Super Admin via /api/users/:id/role endpoint.",
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"anotheruser@tspark.com\",\n  \"password\": \"AnotherUser123!\",\n  \"firstName\": \"Another\",\n  \"lastName\": \"User\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('gymOwnerUserId', jsonData.data.user.id);",
-                  "    console.log('Gym Owner created:', jsonData.data.user.email);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.3 Register Test Client 1",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "**Test user registration - creates CLIENT role.**\n\nClients can:\n- Join gyms and challenges\n- Log workouts\n- Add friends\n- View leaderboards",
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"testclient1@tspark.com\",\n  \"password\": \"TestClient123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Client1\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('clientUserId', jsonData.data.user.id);",
-                  "    console.log('Client created with ID:', jsonData.data.user.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.4 Register Test Client 2",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "**Test user registration - creates CLIENT role.**\n\nCreates a second test client for testing friend requests and multi-user scenarios.",
-            "url": {
-              "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"testclient2@tspark.com\",\n  \"password\": \"TestClient123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Client2\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.collectionVariables.set('client2UserId', jsonData.data.user.id);",
-                  "    console.log('Client 2 created with ID:', jsonData.data.user.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "1.5 Login Super Admin",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "Login as Super Admin (seeder account).\n\n**Auto-saves token** to `{{superAdminToken}}`\n\nCredentials from seeder: admin@tspark.com / SuperAdmin123!",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Login as Super Admin.\n\n**Auto-saves**: `{{superAdminToken}}`, `{{superAdminUserId}}`\n\nCredentials: admin@tspark.com / SuperAdmin123!",
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
@@ -192,7 +68,8 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('superAdminToken', jsonData.data.token);",
-                  "    console.log('Super Admin token saved!');",
+                  "    pm.collectionVariables.set('superAdminUserId', jsonData.data.user.id);",
+                  "    console.log('✅ Super Admin token saved!');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -201,13 +78,11 @@
           ]
         },
         {
-          "name": "1.6 Login Gym Owner",
+          "name": "1.2 Login Gym Owner",
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "Login as Gym Owner (seeder account).\n\n**Auto-saves token** to `{{gymOwnerToken}}`\n\nCredentials from seeder: gymowner@tspark.com / GymOwner123!",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Login as Gym Owner.\n\n**Auto-saves**: `{{gymOwnerToken}}`, `{{gymOwnerUserId}}`\n\nCredentials: gymowner@tspark.com / GymOwner123!",
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
@@ -226,7 +101,8 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('gymOwnerToken', jsonData.data.token);",
-                  "    console.log('Gym Owner token saved!');",
+                  "    pm.collectionVariables.set('gymOwnerUserId', jsonData.data.user.id);",
+                  "    console.log('✅ Gym Owner token saved!');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -235,13 +111,11 @@
           ]
         },
         {
-          "name": "1.7 Login Client 1",
+          "name": "1.3 Login Client 1",
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "Login as Client 1 (seeder account).\n\n**Auto-saves token** to `{{clientToken}}`\n\nCredentials from seeder: client1@tspark.com / Client123!",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Login as Client 1.\n\n**Auto-saves**: `{{clientToken}}`, `{{clientUserId}}`\n\nCredentials: client1@tspark.com / Client123!",
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
@@ -261,7 +135,7 @@
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('clientToken', jsonData.data.token);",
                   "    pm.collectionVariables.set('clientUserId', jsonData.data.user.id);",
-                  "    console.log('Client token and userId saved!');",
+                  "    console.log('✅ Client 1 token saved!');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -270,13 +144,11 @@
           ]
         },
         {
-          "name": "1.8 Login Client 2",
+          "name": "1.4 Login Client 2",
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "description": "Login as Client 2 (seeder account).\n\n**Auto-saves token** to `{{client2Token}}`\n\nCredentials from seeder: client2@tspark.com / Client123!",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Login as Client 2 (for social features testing).\n\n**Auto-saves**: `{{client2Token}}`, `{{client2UserId}}`\n\nCredentials: client2@tspark.com / Client123!",
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
@@ -296,7 +168,7 @@
                   "    var jsonData = pm.response.json();",
                   "    pm.collectionVariables.set('client2Token', jsonData.data.token);",
                   "    pm.collectionVariables.set('client2UserId', jsonData.data.user.id);",
-                  "    console.log('Client 2 token and userId saved!');",
+                  "    console.log('✅ Client 2 token saved!');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -305,13 +177,11 @@
           ]
         },
         {
-          "name": "1.9 Get Current User Profile",
+          "name": "1.5 Verify Auth - Get Current User",
           "request": {
             "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-            ],
-            "description": "Test authentication by getting current user profile.\n\nChange token to test different users.",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Test authentication by getting current user profile.",
             "url": {
               "raw": "{{base_url}}/auth/me",
               "host": ["{{base_url}}"],
@@ -322,750 +192,611 @@
       ]
     },
     {
-      "name": "2. Auth Features (NEW)",
+      "name": "2. Super Admin: Create Exercises",
+      "description": "**Role Required**: Super Admin\n\nExercises must be created BEFORE challenges (for recommended exercises).\n\nOnly Super Admins can create exercises.",
       "item": [
         {
-          "name": "Email Verification",
-          "item": [
-            {
-              "name": "2.1 Verify Email (with token)",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "description": "Verify email address using the token sent via email.\n\n**Note**: Replace `{{emailVerificationToken}}` with actual token from registration email.",
-                "url": {
-                  "raw": "{{base_url}}/auth/verify-email?token={{emailVerificationToken}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "verify-email"],
-                  "query": [
-                    { "key": "token", "value": "{{emailVerificationToken}}" }
-                  ]
-                }
-              }
+          "name": "2.1 Create Exercise - Barbell Squat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Create first exercise.\n\n**Auto-saves**: `{{exerciseId}}`",
+            "url": {
+              "raw": "{{base_url}}/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["exercises"]
             },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Barbell Squat\",\n  \"description\": \"Compound lower body exercise targeting quads, glutes, and hamstrings.\",\n  \"difficulty\": \"intermediate\",\n  \"muscleGroups\": [\"legs\", \"glutes\"],\n  \"caloriesPerMinute\": 8,\n  \"instructions\": \"Stand with feet shoulder-width apart. Place barbell on upper back. Bend knees and lower hips until thighs are parallel. Push through heels to return to standing.\"\n}"
+            }
+          },
+          "event": [
             {
-              "name": "2.2 Resend Verification Email",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    var id = jsonData.data.id || jsonData.data.exercise?.id;",
+                  "    pm.collectionVariables.set('exerciseId', id);",
+                  "    console.log('✅ Exercise 1 created:', id);",
+                  "}"
                 ],
-                "description": "Resend verification email to current authenticated user.\n\n**Requires authentication**",
-                "url": {
-                  "raw": "{{base_url}}/auth/resend-verification",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "resend-verification"]
-                }
+                "type": "text/javascript"
               }
             }
           ]
         },
         {
-          "name": "Password Reset",
-          "item": [
-            {
-              "name": "2.3 Forgot Password (Request Reset)",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "Request a password reset email.\n\n**Security**: Always returns success message regardless of whether email exists.",
-                "url": {
-                  "raw": "{{base_url}}/auth/forgot-password",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "forgot-password"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"email\": \"client@tspark.com\"\n}"
-                }
-              }
+          "name": "2.2 Create Exercise - Push-ups",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Create second exercise.\n\n**Auto-saves**: `{{exerciseId2}}`",
+            "url": {
+              "raw": "{{base_url}}/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["exercises"]
             },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Push-ups\",\n  \"description\": \"Classic bodyweight exercise for upper body strength.\",\n  \"difficulty\": \"beginner\",\n  \"muscleGroups\": [\"chest\", \"arms\", \"shoulders\"],\n  \"caloriesPerMinute\": 7,\n  \"instructions\": \"Start in plank position. Lower body until chest nearly touches ground. Push back up to starting position.\"\n}"
+            }
+          },
+          "event": [
             {
-              "name": "2.4 Reset Password (with token)",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Content-Type", "value": "application/json" }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    var id = jsonData.data.id || jsonData.data.exercise?.id;",
+                  "    pm.collectionVariables.set('exerciseId2', id);",
+                  "    console.log('✅ Exercise 2 created:', id);",
+                  "}"
                 ],
-                "description": "Reset password using the token from reset email.\n\n**Note**: Replace `{{passwordResetToken}}` with actual token from email.",
-                "url": {
-                  "raw": "{{base_url}}/auth/reset-password",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "reset-password"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"token\": \"{{passwordResetToken}}\",\n  \"newPassword\": \"NewPassword123!\"\n}"
-                }
+                "type": "text/javascript"
               }
             }
           ]
+        },
+        {
+          "name": "2.3 List All Exercises",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "List all exercises.",
+            "url": {
+              "raw": "{{base_url}}/exercises",
+              "host": ["{{base_url}}"],
+              "path": ["exercises"]
+            }
+          }
+        },
+        {
+          "name": "2.4 Get Exercise by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Get exercise details.",
+            "url": {
+              "raw": "{{base_url}}/exercises/{{exerciseId}}",
+              "host": ["{{base_url}}"],
+              "path": ["exercises", "{{exerciseId}}"]
+            }
+          }
+        },
+        {
+          "name": "2.5 Search Exercises",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Search exercises by name/description.",
+            "url": {
+              "raw": "{{base_url}}/exercises/search?q=squat",
+              "host": ["{{base_url}}"],
+              "path": ["exercises", "search"],
+              "query": [{ "key": "q", "value": "squat" }]
+            }
+          }
+        },
+        {
+          "name": "2.6 Filter by Difficulty",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Filter exercises by difficulty.",
+            "url": {
+              "raw": "{{base_url}}/exercises?difficulty=beginner",
+              "host": ["{{base_url}}"],
+              "path": ["exercises"],
+              "query": [{ "key": "difficulty", "value": "beginner" }]
+            }
+          }
+        },
+        {
+          "name": "2.7 Update Exercise",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Update exercise details.",
+            "url": {
+              "raw": "{{base_url}}/exercises/{{exerciseId}}",
+              "host": ["{{base_url}}"],
+              "path": ["exercises", "{{exerciseId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated: The king of lower body exercises.\",\n  \"caloriesPerMinute\": 10\n}"
+            }
+          }
         }
       ]
     },
     {
-      "name": "3. Super Admin Features",
+      "name": "3. Gym Owner: Create Gym",
+      "description": "**Role Required**: Gym Owner\n\nCreate a gym. Gyms start with status PENDING.\n\n⚠️ **IMPORTANT**: Gym must be APPROVED by Super Admin before it can be used in challenges!",
       "item": [
         {
-          "name": "Exercises",
-          "item": [
-            {
-              "name": "3.1 Create Exercise - Barbell Squat",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nCreates a new exercise.\n\n**Auto-saves** `{{exerciseId}}`",
-                "url": {
-                  "raw": "{{base_url}}/exercises",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"Barbell Squat\",\n  \"description\": \"Compound lower body exercise targeting quads, glutes, and hamstrings.\",\n  \"difficulty\": \"intermediate\",\n  \"muscleGroups\": [\"legs\", \"glutes\", \"core\"],\n  \"caloriesPerMinute\": 8,\n  \"instructions\": \"Stand with feet shoulder-width apart. Place barbell on upper back. Bend knees and lower hips until thighs are parallel. Push through heels to return to standing.\",\n  \"videoUrl\": \"https://example.com/squat-tutorial\"\n}"
-                }
-              },
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "if (pm.response.code === 201) {",
-                      "    var jsonData = pm.response.json();",
-                      "    var id = jsonData.data.id || jsonData.data.exercise?.id;",
-                      "    pm.collectionVariables.set('exerciseId', id);",
-                      "    console.log('Exercise created with ID:', id);",
-                      "}"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ]
+          "name": "3.1 Create Gym",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Create a new gym.\n\n**Status**: PENDING (needs Super Admin approval)\n\n**Auto-saves**: `{{gymId}}`",
+            "url": {
+              "raw": "{{base_url}}/gyms",
+              "host": ["{{base_url}}"],
+              "path": ["gyms"]
             },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"FitZone Premium\",\n  \"description\": \"Modern fitness center with state-of-the-art equipment.\",\n  \"address\": \"123 Fitness Street\",\n  \"city\": \"Paris\",\n  \"phone\": \"+33 1 23 45 67 89\",\n  \"email\": \"contact@fitzone.com\",\n  \"capacity\": 150,\n  \"equipment\": [\"treadmills\", \"dumbbells\", \"squat racks\", \"cable machines\"],\n  \"specializedExerciseTypes\": [\"strength\", \"cardio\", \"flexibility\"]\n}"
+            }
+          },
+          "event": [
             {
-              "name": "3.2 Create Exercise - Push-ups",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    var id = jsonData.data?.id || jsonData.data?.gym?.id;",
+                  "    pm.collectionVariables.set('gymId', id);",
+                  "    console.log('✅ Gym created (PENDING):', id);",
+                  "}"
                 ],
-                "description": "Creates another exercise for variety.",
-                "url": {
-                  "raw": "{{base_url}}/exercises",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"Push-ups\",\n  \"description\": \"Classic bodyweight exercise for upper body strength.\",\n  \"difficulty\": \"beginner\",\n  \"muscleGroups\": [\"chest\", \"arms\", \"shoulders\"],\n  \"caloriesPerMinute\": 7,\n  \"instructions\": \"Start in plank position. Lower body until chest nearly touches ground. Push back up to starting position.\"\n}"
-                }
-              },
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "if (pm.response.code === 201) {",
-                      "    var jsonData = pm.response.json();",
-                      "    var id = jsonData.data.id || jsonData.data.exercise?.id;",
-                      "    pm.collectionVariables.set('exerciseId2', id);",
-                      "    console.log('Exercise 2 created with ID:', id);",
-                      "}"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "3.3 List All Exercises",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "List all exercises. Any authenticated user can view.",
-                "url": {
-                  "raw": "{{base_url}}/exercises",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises"]
-                }
-              }
-            },
-            {
-              "name": "3.4 Get Exercise by ID",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "Get exercise details by ID.",
-                "url": {
-                  "raw": "{{base_url}}/exercises/{{exerciseId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises", "{{exerciseId}}"]
-                }
-              }
-            },
-            {
-              "name": "3.5 Search Exercises",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "Search exercises by name or description.",
-                "url": {
-                  "raw": "{{base_url}}/exercises/search?q=squat",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises", "search"],
-                  "query": [
-                    { "key": "q", "value": "squat" }
-                  ]
-                }
-              }
-            },
-            {
-              "name": "3.6 Update Exercise",
-              "request": {
-                "method": "PATCH",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nUpdate exercise details.",
-                "url": {
-                  "raw": "{{base_url}}/exercises/{{exerciseId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises", "{{exerciseId}}"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"description\": \"Updated: The king of lower body exercises.\",\n  \"caloriesPerMinute\": 10\n}"
-                }
-              }
-            },
-            {
-              "name": "3.7 Delete Exercise",
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nDelete an exercise.",
-                "url": {
-                  "raw": "{{base_url}}/exercises/{{exerciseId2}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["exercises", "{{exerciseId2}}"]
-                }
+                "type": "text/javascript"
               }
             }
           ]
         },
         {
-          "name": "Gym Approval",
-          "item": [
-            {
-              "name": "3.8 Approve Gym",
-              "request": {
-                "method": "PATCH",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nApprove a pending gym.",
-                "url": {
-                  "raw": "{{base_url}}/gyms/{{gymId}}/approve",
-                  "host": ["{{base_url}}"],
-                  "path": ["gyms", "{{gymId}}", "approve"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"isApproved\": true\n}"
-                }
-              }
+          "name": "3.2 Get Gym by ID (PENDING status)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "View gym details. Note the PENDING status.",
+            "url": {
+              "raw": "{{base_url}}/gyms/{{gymId}}",
+              "host": ["{{base_url}}"],
+              "path": ["gyms", "{{gymId}}"]
             }
-          ]
+          }
         },
         {
-          "name": "Badges",
-          "item": [
-            {
-              "name": "3.9 Create Badge",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nCreate a new badge.\n\n**Auto-saves** `{{badgeId}}`",
-                "url": {
-                  "raw": "{{base_url}}/badges",
-                  "host": ["{{base_url}}"],
-                  "path": ["badges"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"Workout Warrior\",\n  \"description\": \"Completed 10 workouts\",\n  \"icon\": \"trophy\",\n  \"pointsValue\": 100,\n  \"isActive\": true\n}"
-                }
-              },
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "if (pm.response.code === 201) {",
-                      "    var jsonData = pm.response.json();",
-                      "    var id = jsonData.data?.id || jsonData.id;",
-                      "    pm.collectionVariables.set('badgeId', id);",
-                      "    console.log('Badge created with ID:', id);",
-                      "}"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "3.10 Assign Badge to User",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nAssign a badge to a user.",
-                "url": {
-                  "raw": "{{base_url}}/badges/assign",
-                  "host": ["{{base_url}}"],
-                  "path": ["badges", "assign"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"badgeId\": \"{{badgeId}}\",\n  \"userId\": \"{{clientUserId}}\"\n}"
-                }
-              }
+          "name": "3.3 List All Gyms",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "List all gyms.",
+            "url": {
+              "raw": "{{base_url}}/gyms",
+              "host": ["{{base_url}}"],
+              "path": ["gyms"]
             }
-          ]
+          }
         },
         {
-          "name": "User Management",
-          "item": [
-            {
-              "name": "3.11 List All Users",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "**Requires Super Admin token!**\n\nList all users in the system.",
-                "url": {
-                  "raw": "{{base_url}}/users",
-                  "host": ["{{base_url}}"],
-                  "path": ["users"]
-                }
-              }
-            },
-            {
-              "name": "3.12 Get User by ID",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "Get user details by ID.",
-                "url": {
-                  "raw": "{{base_url}}/users/{{clientUserId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["users", "{{clientUserId}}"]
-                }
-              }
-            },
-            {
-              "name": "3.13 Get User Stats",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" }
-                ],
-                "description": "Get user statistics (workouts, challenges, badges).",
-                "url": {
-                  "raw": "{{base_url}}/users/{{clientUserId}}/stats",
-                  "host": ["{{base_url}}"],
-                  "path": ["users", "{{clientUserId}}", "stats"]
-                }
-              }
+          "name": "3.4 Get My Gyms (by Owner)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "Get gyms owned by current user.",
+            "url": {
+              "raw": "{{base_url}}/gyms/owner/{{gymOwnerUserId}}",
+              "host": ["{{base_url}}"],
+              "path": ["gyms", "owner", "{{gymOwnerUserId}}"]
             }
-          ]
+          }
         }
       ]
     },
     {
-      "name": "4. Gym Owner Features",
+      "name": "4. Super Admin: Approve Gym",
+      "description": "**Role Required**: Super Admin\n\n⚠️ **CRITICAL STEP**: Gym must be approved before it can be used in challenges!\n\nTransition: PENDING → APPROVED",
       "item": [
         {
-          "name": "Gyms",
-          "item": [
-            {
-              "name": "4.1 Create Gym",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Gym Owner token!**\n\nCreates a new gym (status: pending until approved).\n\n**Auto-saves** `{{gymId}}`",
-                "url": {
-                  "raw": "{{base_url}}/gyms",
-                  "host": ["{{base_url}}"],
-                  "path": ["gyms"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"FitZone Premium\",\n  \"description\": \"Modern fitness center with state-of-the-art equipment.\",\n  \"address\": \"123 Fitness Street\",\n  \"city\": \"Paris\",\n  \"phone\": \"+33 1 23 45 67 89\",\n  \"email\": \"contact@fitzone.com\",\n  \"capacity\": 150,\n  \"equipment\": [\"treadmill\", \"dumbbells\", \"barbell\", \"squat rack\", \"bench press\", \"cable machine\"],\n  \"specializedExerciseTypes\": [\"strength\", \"cardio\", \"flexibility\"]\n}"
-                }
-              },
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "if (pm.response.code === 201) {",
-                      "    var jsonData = pm.response.json();",
-                      "    var id = jsonData.data?.id || jsonData.data?.gym?.id;",
-                      "    pm.collectionVariables.set('gymId', id);",
-                      "    console.log('Gym created with ID:', id);",
-                      "}"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "4.2 List All Gyms",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "List all approved gyms.",
-                "url": {
-                  "raw": "{{base_url}}/gyms",
-                  "host": ["{{base_url}}"],
-                  "path": ["gyms"]
-                }
-              }
-            },
-            {
-              "name": "4.3 Get Gym by ID",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "Get gym details by ID.",
-                "url": {
-                  "raw": "{{base_url}}/gyms/{{gymId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["gyms", "{{gymId}}"]
-                }
-              }
-            },
-            {
-              "name": "4.4 Update Gym",
-              "request": {
-                "method": "PATCH",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Gym Owner token!**\n\nUpdate gym details (owner only).",
-                "url": {
-                  "raw": "{{base_url}}/gyms/{{gymId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["gyms", "{{gymId}}"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"description\": \"Updated: Premium fitness center with 24/7 access.\",\n  \"openingHours\": \"24/7 Access with key card\"\n}"
-                }
-              }
+          "name": "4.1 Approve Gym ⚡",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "**CRITICAL**: Approve the gym to enable challenge creation.\n\nTransition: PENDING → APPROVED",
+            "url": {
+              "raw": "{{base_url}}/gyms/{{gymId}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["gyms", "{{gymId}}", "approve"]
             }
-          ]
+          }
         },
         {
-          "name": "Challenges",
-          "item": [
-            {
-              "name": "4.5 Create Challenge",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Gym Owner or Super Admin token!**\n\nCreates a challenge.\n\n**Auto-saves** `{{challengeId}}`\n\n**Important**: startDate must be in the future!",
-                "url": {
-                  "raw": "{{base_url}}/challenges",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"title\": \"30-Day Strength Challenge\",\n  \"description\": \"Build muscle and strength over 30 days with our structured workout program.\",\n  \"type\": \"individual\",\n  \"difficulty\": \"medium\",\n  \"objectives\": {\n    \"targetWorkouts\": 20,\n    \"targetCalories\": 5000,\n    \"targetDuration\": 600\n  },\n  \"startDate\": \"2025-12-20T00:00:00Z\",\n  \"endDate\": \"2026-01-20T23:59:59Z\",\n  \"pointsReward\": 500,\n  \"isPublic\": true,\n  \"maxParticipants\": 100,\n  \"gymId\": \"{{gymId}}\",\n  \"recommendedExerciseIds\": [\"{{exerciseId}}\"]\n}"
-                }
-              },
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "if (pm.response.code === 201) {",
-                      "    var jsonData = pm.response.json();",
-                      "    var id = jsonData.data?.id || jsonData.data?.challenge?.id;",
-                      "    pm.collectionVariables.set('challengeId', id);",
-                      "    console.log('Challenge created with ID:', id);",
-                      "}"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "4.6 List All Challenges",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "List all challenges.",
-                "url": {
-                  "raw": "{{base_url}}/challenges",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges"]
-                }
-              }
-            },
-            {
-              "name": "4.7 List Challenges with Filters",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "Filter challenges by type, difficulty, gym, or public status.",
-                "url": {
-                  "raw": "{{base_url}}/challenges?type=individual&difficulty=medium&isPublic=true",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges"],
-                  "query": [
-                    { "key": "type", "value": "individual" },
-                    { "key": "difficulty", "value": "medium" },
-                    { "key": "isPublic", "value": "true" }
-                  ]
-                }
-              }
-            },
-            {
-              "name": "4.8 Get Challenge by ID",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "Get challenge details with participants.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/{{challengeId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "{{challengeId}}"]
-                }
-              }
-            },
-            {
-              "name": "4.9 Update Challenge",
-              "request": {
-                "method": "PATCH",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Requires Challenge Owner or Super Admin!**\n\nUpdate challenge details.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/{{challengeId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "{{challengeId}}"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"title\": \"30-Day Ultimate Strength Challenge\",\n  \"pointsReward\": 750,\n  \"maxParticipants\": 150\n}"
-                }
-              }
-            },
-            {
-              "name": "4.10 Get Challenge Participants",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "View all participants in a challenge.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/{{challengeId}}/participants",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "{{challengeId}}", "participants"]
-                }
-              }
-            },
-            {
-              "name": "4.11 Delete Challenge",
-              "request": {
-                "method": "DELETE",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }
-                ],
-                "description": "**Requires Challenge Owner or Super Admin!**\n\nDelete a challenge.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/{{challengeId}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "{{challengeId}}"]
-                }
-              }
+          "name": "4.2 Verify Gym is APPROVED",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Verify gym status is now APPROVED.",
+            "url": {
+              "raw": "{{base_url}}/gyms/{{gymId}}",
+              "host": ["{{base_url}}"],
+              "path": ["gyms", "{{gymId}}"]
             }
-          ]
+          }
+        },
+        {
+          "name": "4.3 Update Gym (optional)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Update gym details (owner only).",
+            "url": {
+              "raw": "{{base_url}}/gyms/{{gymId}}",
+              "host": ["{{base_url}}"],
+              "path": ["gyms", "{{gymId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated: Premium fitness center with 24/7 access.\"\n}"
+            }
+          }
         }
       ]
     },
     {
-      "name": "5. Client Features",
+      "name": "5. Gym Owner: Create & Start Challenge",
+      "description": "**Role Required**: Gym Owner or Super Admin\n\n**Prerequisites**:\n- ✅ Exercises created (step 2)\n- ✅ Gym created AND APPROVED (steps 3-4)\n\n**Challenge Lifecycle**:\n1. Create challenge → status: DRAFT\n2. Start challenge → status: ACTIVE\n3. Users can join ACTIVE challenges\n4. Complete/Cancel when done",
       "item": [
         {
-          "name": "Challenges",
-          "item": [
+          "name": "5.1 Create Challenge (DRAFT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Create a challenge.\n\n**Status**: DRAFT (cannot accept participants yet)\n\n**Auto-saves**: `{{challengeId}}`\n\n**Note**: Dates are automatically set via pre-request script (today → +30 days)!",
+            "url": {
+              "raw": "{{base_url}}/challenges",
+              "host": ["{{base_url}}"],
+              "path": ["challenges"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"30-Day Strength Challenge\",\n  \"description\": \"Build muscle and strength over 30 days with our structured workout program.\",\n  \"type\": \"individual\",\n  \"difficulty\": \"medium\",\n  \"objectives\": {\n    \"targetWorkouts\": 20,\n    \"targetCalories\": 5000,\n    \"targetDuration\": 600\n  },\n  \"startDate\": \"{{challengeStartDate}}\",\n  \"endDate\": \"{{challengeEndDate}}\",\n  \"pointsReward\": 500,\n  \"isPublic\": true,\n  \"maxParticipants\": 100,\n  \"gymId\": \"{{gymId}}\",\n  \"recommendedExerciseIds\": [\"{{exerciseId}}\"]\n}"
+            }
+          },
+          "event": [
             {
-              "name": "5.1 Browse Challenges",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Set startDate to today at midnight UTC",
+                  "const today = new Date();",
+                  "today.setUTCHours(0, 0, 0, 0);",
+                  "pm.collectionVariables.set('challengeStartDate', today.toISOString());",
+                  "",
+                  "// Set endDate to 30 days from now at 23:59:59 UTC",
+                  "const endDate = new Date(today);",
+                  "endDate.setDate(endDate.getDate() + 30);",
+                  "endDate.setUTCHours(23, 59, 59, 0);",
+                  "pm.collectionVariables.set('challengeEndDate', endDate.toISOString());",
+                  "",
+                  "console.log('📅 Challenge dates set:', pm.collectionVariables.get('challengeStartDate'), 'to', pm.collectionVariables.get('challengeEndDate'));"
                 ],
-                "description": "View all available public challenges.",
-                "url": {
-                  "raw": "{{base_url}}/challenges?isPublic=true",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges"],
-                  "query": [
-                    { "key": "isPublic", "value": "true" }
-                  ]
-                }
+                "type": "text/javascript"
               }
             },
             {
-              "name": "5.2 Join Challenge",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    var id = jsonData.data?.id || jsonData.data?.challenge?.id;",
+                  "    pm.collectionVariables.set('challengeId', id);",
+                  "    console.log('✅ Challenge created (DRAFT):', id);",
+                  "}"
                 ],
-                "description": "**Requires Client token!**\n\nJoin a challenge to start participating.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/{{challengeId}}/join",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "{{challengeId}}", "join"]
-                }
-              }
-            },
-            {
-              "name": "5.3 Get My Participations",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
-                "description": "View all challenges you've joined.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/my-participations",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "my-participations"]
-                }
-              }
-            },
-            {
-              "name": "5.4 Leave Challenge",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
-                "description": "Leave a challenge you've joined.",
-                "url": {
-                  "raw": "{{base_url}}/challenges/{{challengeId}}/leave",
-                  "host": ["{{base_url}}"],
-                  "path": ["challenges", "{{challengeId}}", "leave"]
-                }
+                "type": "text/javascript"
               }
             }
           ]
         },
         {
-          "name": "Workouts",
+          "name": "5.2 Get Challenge (verify DRAFT status)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "View challenge details. Note the DRAFT status.",
+            "url": {
+              "raw": "{{base_url}}/challenges/{{challengeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "{{challengeId}}"]
+            }
+          }
+        },
+        {
+          "name": "5.3 Start Challenge (DRAFT → ACTIVE) ⚡",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "**CRITICAL**: Activate the challenge so users can join!\n\nTransition: DRAFT → ACTIVE",
+            "url": {
+              "raw": "{{base_url}}/challenges/{{challengeId}}/start",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "{{challengeId}}", "start"]
+            }
+          }
+        },
+        {
+          "name": "5.4 Get Challenge (verify ACTIVE status)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "Verify challenge status is now ACTIVE.",
+            "url": {
+              "raw": "{{base_url}}/challenges/{{challengeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "{{challengeId}}"]
+            }
+          }
+        },
+        {
+          "name": "5.5 List All Challenges",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "List all challenges.",
+            "url": {
+              "raw": "{{base_url}}/challenges",
+              "host": ["{{base_url}}"],
+              "path": ["challenges"]
+            }
+          }
+        },
+        {
+          "name": "5.6 Filter Challenges",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "Filter challenges by type, difficulty, etc.",
+            "url": {
+              "raw": "{{base_url}}/challenges?type=individual&isPublic=true",
+              "host": ["{{base_url}}"],
+              "path": ["challenges"],
+              "query": [
+                { "key": "type", "value": "individual" },
+                { "key": "isPublic", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.7 Update Challenge",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Update challenge details.",
+            "url": {
+              "raw": "{{base_url}}/challenges/{{challengeId}}",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "{{challengeId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"30-Day Ultimate Strength Challenge\",\n  \"pointsReward\": 750\n}"
+            }
+          }
+        },
+        {
+          "name": "5.8 Get Challenge Participants",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+            "description": "View all participants.",
+            "url": {
+              "raw": "{{base_url}}/challenges/{{challengeId}}/participants",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "{{challengeId}}", "participants"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Client: Join Challenge & Log Workouts",
+      "description": "**Role Required**: Client (any authenticated user)\n\n**Prerequisites**:\n- ✅ Challenge is ACTIVE (step 5.3)\n- ✅ Current date is within challenge date range\n\nClients can join active challenges and log workouts.",
+      "item": [
+        {
+          "name": "6.1 Browse Available Challenges",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "View public challenges available to join.",
+            "url": {
+              "raw": "{{base_url}}/challenges?isPublic=true",
+              "host": ["{{base_url}}"],
+              "path": ["challenges"],
+              "query": [{ "key": "isPublic", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "6.2 Join Challenge ⚡",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "Join an ACTIVE challenge.\n\n**Requirements**:\n- Challenge must be ACTIVE\n- Must be within date range\n- Cannot already be a participant",
+            "url": {
+              "raw": "{{base_url}}/challenges/{{challengeId}}/join",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "{{challengeId}}", "join"]
+            }
+          }
+        },
+        {
+          "name": "6.3 Get My Participations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "View challenges I've joined.",
+            "url": {
+              "raw": "{{base_url}}/challenges/my-participations",
+              "host": ["{{base_url}}"],
+              "path": ["challenges", "my-participations"]
+            }
+          }
+        },
+        {
+          "name": "6.4 Log Workout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{clientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Log a workout session.\n\nContributes to challenge progress!\n\n**Auto-saves**: `{{workoutId}}`",
+            "url": {
+              "raw": "{{base_url}}/workouts",
+              "host": ["{{base_url}}"],
+              "path": ["workouts"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Morning Strength Session\",\n  \"description\": \"Great leg day workout\",\n  \"duration\": 45,\n  \"caloriesBurned\": 350,\n  \"exercises\": [\n    {\n      \"exerciseId\": \"{{exerciseId}}\",\n      \"sets\": 4,\n      \"reps\": 10,\n      \"weight\": 80,\n      \"restTime\": 60\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    var id = jsonData.id || jsonData.data?.id;",
+                  "    pm.collectionVariables.set('workoutId', id);",
+                  "    console.log('✅ Workout created:', id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.5 Get My Workouts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "View all my logged workouts.",
+            "url": {
+              "raw": "{{base_url}}/workouts",
+              "host": ["{{base_url}}"],
+              "path": ["workouts"]
+            }
+          }
+        },
+        {
+          "name": "6.6 Get Workout by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "Get workout details with exercises.",
+            "url": {
+              "raw": "{{base_url}}/workouts/{{workoutId}}",
+              "host": ["{{base_url}}"],
+              "path": ["workouts", "{{workoutId}}"]
+            }
+          }
+        },
+        {
+          "name": "6.7 Get Workout Statistics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "Get comprehensive workout statistics.",
+            "url": {
+              "raw": "{{base_url}}/workouts/statistics",
+              "host": ["{{base_url}}"],
+              "path": ["workouts", "statistics"]
+            }
+          }
+        },
+        {
+          "name": "6.8 Update Workout",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{clientToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Update workout details.",
+            "url": {
+              "raw": "{{base_url}}/workouts/{{workoutId}}",
+              "host": ["{{base_url}}"],
+              "path": ["workouts", "{{workoutId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Morning Session\",\n  \"duration\": 60,\n  \"caloriesBurned\": 450\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Social Features & Badges",
+      "description": "Social features (friends) and badge system.\n\nNo strict dependencies - can be tested independently.",
+      "item": [
+        {
+          "name": "Friends",
           "item": [
             {
-              "name": "5.5 Log Workout",
+              "name": "7.1 Send Friend Request (Client 1 → Client 2)",
               "request": {
                 "method": "POST",
                 "header": [
                   { "key": "Authorization", "value": "Bearer {{clientToken}}" },
                   { "key": "Content-Type", "value": "application/json" }
                 ],
-                "description": "**Requires Client token!**\n\nLog a workout session. Contributes to challenge progress.",
-                "url": {
-                  "raw": "{{base_url}}/workouts",
-                  "host": ["{{base_url}}"],
-                  "path": ["workouts"]
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"Morning Strength Session\",\n  \"description\": \"Great leg day workout focusing on squats\",\n  \"difficulty\": \"intermediate\",\n  \"duration\": 45,\n  \"caloriesBurned\": 350,\n  \"exercises\": [\n    {\n      \"exerciseId\": \"{{exerciseId}}\",\n      \"sets\": 4,\n      \"reps\": 10,\n      \"weight\": 80\n    }\n  ]\n}"
-                }
-              }
-            },
-            {
-              "name": "5.6 Get My Workouts",
-              "request": {
-                "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
-                "description": "View all your logged workouts.",
-                "url": {
-                  "raw": "{{base_url}}/workouts",
-                  "host": ["{{base_url}}"],
-                  "path": ["workouts"]
-                }
-              }
-            }
-          ]
-        },
-        {
-          "name": "Social / Friends",
-          "item": [
-            {
-              "name": "5.7 Send Friend Request",
-              "request": {
-                "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
-                ],
-                "description": "**Client 1 sends friend request to Client 2**\n\n**Auto-saves** `{{friendshipId}}`",
+                "description": "Client 1 sends friend request to Client 2.\n\n**Auto-saves**: `{{friendshipId}}`",
                 "url": {
                   "raw": "{{base_url}}/friends/request",
                   "host": ["{{base_url}}"],
@@ -1085,7 +816,7 @@
                       "    var jsonData = pm.response.json();",
                       "    if (jsonData.data && jsonData.data.id) {",
                       "        pm.collectionVariables.set('friendshipId', jsonData.data.id);",
-                      "        console.log('Friendship ID saved:', jsonData.data.id);",
+                      "        console.log('✅ Friend request sent:', jsonData.data.id);",
                       "    }",
                       "}"
                     ],
@@ -1095,13 +826,11 @@
               ]
             },
             {
-              "name": "5.8 List Sent Requests",
+              "name": "7.2 View Sent Requests (Client 1)",
               "request": {
                 "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
-                "description": "View friend requests you've sent.",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "View requests I've sent.",
                 "url": {
                   "raw": "{{base_url}}/friends/sent",
                   "host": ["{{base_url}}"],
@@ -1110,13 +839,11 @@
               }
             },
             {
-              "name": "5.9 List Pending Requests (Client 2)",
+              "name": "7.3 View Pending Requests (Client 2)",
               "request": {
                 "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{client2Token}}" }
-                ],
-                "description": "**As Client 2**, view pending friend requests.",
+                "header": [{ "key": "Authorization", "value": "Bearer {{client2Token}}" }],
+                "description": "As Client 2, view pending friend requests.",
                 "url": {
                   "raw": "{{base_url}}/friends/pending",
                   "host": ["{{base_url}}"],
@@ -1125,13 +852,11 @@
               }
             },
             {
-              "name": "5.10 Accept Friend Request (Client 2)",
+              "name": "7.4 Accept Friend Request (Client 2)",
               "request": {
                 "method": "POST",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{client2Token}}" }
-                ],
-                "description": "**As Client 2**, accept the pending friend request.",
+                "header": [{ "key": "Authorization", "value": "Bearer {{client2Token}}" }],
+                "description": "As Client 2, accept the friend request.",
                 "url": {
                   "raw": "{{base_url}}/friends/{{friendshipId}}/accept",
                   "host": ["{{base_url}}"],
@@ -1140,12 +865,10 @@
               }
             },
             {
-              "name": "5.11 List Friends",
+              "name": "7.5 List My Friends",
               "request": {
                 "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
                 "description": "View all accepted friends.",
                 "url": {
                   "raw": "{{base_url}}/friends",
@@ -1155,12 +878,10 @@
               }
             },
             {
-              "name": "5.12 Get Friendship Status",
+              "name": "7.6 Get Friendship Status",
               "request": {
                 "method": "GET",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
                 "description": "Check friendship status with another user.",
                 "url": {
                   "raw": "{{base_url}}/friends/status/{{client2UserId}}",
@@ -1168,19 +889,599 @@
                   "path": ["friends", "status", "{{client2UserId}}"]
                 }
               }
+            }
+          ]
+        },
+        {
+          "name": "Badges (Super Admin)",
+          "item": [
+            {
+              "name": "7.7 Create Badge",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "description": "Create a new badge (Super Admin only).\n\n**Auto-saves**: `{{badgeId}}`",
+                "url": {
+                  "raw": "{{base_url}}/badges",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Workout Warrior\",\n  \"description\": \"Completed 10 workouts\",\n  \"icon\": \"trophy\",\n  \"pointsValue\": 100,\n  \"isActive\": true\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    var id = jsonData.data?.id || jsonData.id;",
+                      "    pm.collectionVariables.set('badgeId', id);",
+                      "    console.log('✅ Badge created:', id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
             },
             {
-              "name": "5.13 Remove Friend",
+              "name": "7.8 List Available Badges",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "List all active badges.",
+                "url": {
+                  "raw": "{{base_url}}/badges/available",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "available"]
+                }
+              }
+            },
+            {
+              "name": "7.9 Get Badge by ID",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Get badge details.",
+                "url": {
+                  "raw": "{{base_url}}/badges/{{badgeId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "{{badgeId}}"]
+                }
+              }
+            },
+            {
+              "name": "7.10 Create Badge Rule",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "description": "Create auto-award rule.\n\nTypes: total_workouts, total_calories, challenges_completed, total_points\nOperators: >=, >, =, <, <=\n\n**Auto-saves**: `{{badgeRuleId}}`",
+                "url": {
+                  "raw": "{{base_url}}/badges/{{badgeId}}/rules",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "{{badgeId}}", "rules"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ruleType\": \"total_workouts\",\n  \"operator\": \">=\",\n  \"targetValue\": 10,\n  \"description\": \"Complete 10 or more workouts\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    var id = jsonData.data?.id || jsonData.id;",
+                      "    pm.collectionVariables.set('badgeRuleId', id);",
+                      "    console.log('✅ Badge rule created:', id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "7.11 Get Badge Rules",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Get all rules for a badge.",
+                "url": {
+                  "raw": "{{base_url}}/badges/{{badgeId}}/rules",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "{{badgeId}}", "rules"]
+                }
+              }
+            },
+            {
+              "name": "7.12 Assign Badge to User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "description": "Manually assign badge to a user.",
+                "url": {
+                  "raw": "{{base_url}}/badges/assign",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "assign"]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"badgeId\": \"{{badgeId}}\",\n  \"userId\": \"{{clientUserId}}\"\n}"
+                }
+              }
+            },
+            {
+              "name": "7.13 Get My Badges (Client)",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "View badges I've earned.",
+                "url": {
+                  "raw": "{{base_url}}/badges",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Notifications",
+          "item": [
+            {
+              "name": "7.14 Get All Notifications",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "Get all notifications.",
+                "url": {
+                  "raw": "{{base_url}}/notifications",
+                  "host": ["{{base_url}}"],
+                  "path": ["notifications"]
+                }
+              }
+            },
+            {
+              "name": "7.15 Get Unread Count",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "Get unread notification count.",
+                "url": {
+                  "raw": "{{base_url}}/notifications/unread-count",
+                  "host": ["{{base_url}}"],
+                  "path": ["notifications", "unread-count"]
+                }
+              }
+            },
+            {
+              "name": "7.16 Mark All as Read",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "Mark all notifications as read.",
+                "url": {
+                  "raw": "{{base_url}}/notifications/mark-all-read",
+                  "host": ["{{base_url}}"],
+                  "path": ["notifications", "mark-all-read"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. User Management (Super Admin)",
+      "description": "User management features for Super Admin.",
+      "item": [
+        {
+          "name": "8.1 List All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "List all users (Super Admin only).",
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "8.2 Filter Users by Role",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Filter users by role.",
+            "url": {
+              "raw": "{{base_url}}/users?role=client",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [{ "key": "role", "value": "client" }]
+            }
+          }
+        },
+        {
+          "name": "8.3 Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Get user details.",
+            "url": {
+              "raw": "{{base_url}}/users/{{clientUserId}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{clientUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "8.4 Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+            "description": "Get user statistics.",
+            "url": {
+              "raw": "{{base_url}}/users/{{clientUserId}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{clientUserId}}", "stats"]
+            }
+          }
+        },
+        {
+          "name": "8.5 Update User Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{superAdminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "description": "Change user role (Super Admin only).\n\nRoles: client, gym_owner, super_admin",
+            "url": {
+              "raw": "{{base_url}}/users/{{clientUserId}}/role",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{clientUserId}}", "role"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"client\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Auth Features (Optional)",
+      "description": "Additional auth features for testing.",
+      "item": [
+        {
+          "name": "9.1 Register New User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Register a new user (always CLIENT role).",
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@tspark.com\",\n  \"password\": \"NewUser123!\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\"\n}"
+            }
+          }
+        },
+        {
+          "name": "9.2 Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Request password reset email.",
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "forgot-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client1@tspark.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "9.3 Resend Verification Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "Resend email verification.",
+            "url": {
+              "raw": "{{base_url}}/auth/resend-verification",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "resend-verification"]
+            }
+          }
+        },
+        {
+          "name": "9.4 Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+            "description": "Logout and invalidate token.",
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "99. Destructive Operations (DELETE)",
+      "description": "⚠️ **DESTRUCTIVE OPERATIONS**\n\nThese endpoints DELETE data permanently.\n\nRun manually - NOT part of automated flow.",
+      "item": [
+        {
+          "name": "Challenge Lifecycle",
+          "item": [
+            {
+              "name": "Leave Challenge",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "Leave a challenge.",
+                "url": {
+                  "raw": "{{base_url}}/challenges/{{challengeId}}/leave",
+                  "host": ["{{base_url}}"],
+                  "path": ["challenges", "{{challengeId}}", "leave"]
+                }
+              }
+            },
+            {
+              "name": "Cancel Challenge",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+                "description": "Cancel a challenge (abandons all participants).",
+                "url": {
+                  "raw": "{{base_url}}/challenges/{{challengeId}}/cancel",
+                  "host": ["{{base_url}}"],
+                  "path": ["challenges", "{{challengeId}}", "cancel"]
+                }
+              }
+            },
+            {
+              "name": "Complete Challenge",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+                "description": "Complete a challenge (after end date).",
+                "url": {
+                  "raw": "{{base_url}}/challenges/{{challengeId}}/complete",
+                  "host": ["{{base_url}}"],
+                  "path": ["challenges", "{{challengeId}}", "complete"]
+                }
+              }
+            },
+            {
+              "name": "Delete Challenge (Soft)",
               "request": {
                 "method": "DELETE",
-                "header": [
-                  { "key": "Authorization", "value": "Bearer {{clientToken}}" }
-                ],
+                "header": [{ "key": "Authorization", "value": "Bearer {{gymOwnerToken}}" }],
+                "description": "Soft-delete a challenge. The challenge is marked as deleted but preserved for history.",
+                "url": {
+                  "raw": "{{base_url}}/challenges/{{challengeId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["challenges", "{{challengeId}}"]
+                }
+              }
+            },
+            {
+              "name": "View Deleted Challenges",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "List all soft-deleted challenges. Super Admin only.",
+                "url": {
+                  "raw": "{{base_url}}/challenges/deleted",
+                  "host": ["{{base_url}}"],
+                  "path": ["challenges", "deleted"]
+                }
+              }
+            },
+            {
+              "name": "Restore Challenge",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Restore a soft-deleted challenge. Creator or Super Admin only.",
+                "url": {
+                  "raw": "{{base_url}}/challenges/{{challengeId}}/restore",
+                  "host": ["{{base_url}}"],
+                  "path": ["challenges", "{{challengeId}}", "restore"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Exercises",
+          "item": [
+            {
+              "name": "Delete Exercise (Soft)",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Soft-delete an exercise.",
+                "url": {
+                  "raw": "{{base_url}}/exercises/{{exerciseId2}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["exercises", "{{exerciseId2}}"]
+                }
+              }
+            },
+            {
+              "name": "View Deleted Exercises",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "List soft-deleted exercises.",
+                "url": {
+                  "raw": "{{base_url}}/exercises/deleted",
+                  "host": ["{{base_url}}"],
+                  "path": ["exercises", "deleted"]
+                }
+              }
+            },
+            {
+              "name": "Restore Exercise",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Restore a soft-deleted exercise.",
+                "url": {
+                  "raw": "{{base_url}}/exercises/{{exerciseId2}}/restore",
+                  "host": ["{{base_url}}"],
+                  "path": ["exercises", "{{exerciseId2}}", "restore"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Workouts",
+          "item": [
+            {
+              "name": "Delete Workout",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
+                "description": "Delete a workout.",
+                "url": {
+                  "raw": "{{base_url}}/workouts/{{workoutId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["workouts", "{{workoutId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Badges",
+          "item": [
+            {
+              "name": "Delete Badge Rule",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Delete a badge rule.",
+                "url": {
+                  "raw": "{{base_url}}/badges/rules/{{badgeRuleId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "rules", "{{badgeRuleId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Badge (Soft)",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Soft-delete a badge. The badge is preserved for user badge history.",
+                "url": {
+                  "raw": "{{base_url}}/badges/{{badgeId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "{{badgeId}}"]
+                }
+              }
+            },
+            {
+              "name": "View Deleted Badges",
+              "request": {
+                "method": "GET",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "List all soft-deleted badges. Super Admin only.",
+                "url": {
+                  "raw": "{{base_url}}/badges/deleted",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "deleted"]
+                }
+              }
+            },
+            {
+              "name": "Restore Badge",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Restore a soft-deleted badge. Super Admin only.",
+                "url": {
+                  "raw": "{{base_url}}/badges/{{badgeId}}/restore",
+                  "host": ["{{base_url}}"],
+                  "path": ["badges", "{{badgeId}}", "restore"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Friends",
+          "item": [
+            {
+              "name": "Reject Friend Request",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Authorization", "value": "Bearer {{client2Token}}" }],
+                "description": "Reject a friend request.",
+                "url": {
+                  "raw": "{{base_url}}/friends/{{friendshipId}}/reject",
+                  "host": ["{{base_url}}"],
+                  "path": ["friends", "{{friendshipId}}", "reject"]
+                }
+              }
+            },
+            {
+              "name": "Remove Friend",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{clientToken}}" }],
                 "description": "Remove a friend.",
                 "url": {
                   "raw": "{{base_url}}/friends/{{friendshipId}}",
                   "host": ["{{base_url}}"],
                   "path": ["friends", "{{friendshipId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "Deactivate User",
+              "request": {
+                "method": "DELETE",
+                "header": [{ "key": "Authorization", "value": "Bearer {{superAdminToken}}" }],
+                "description": "Deactivate a user account.",
+                "url": {
+                  "raw": "{{base_url}}/users/{{clientUserId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["users", "{{clientUserId}}"]
                 }
               }
             }
@@ -1203,9 +1504,12 @@
     { "key": "exerciseId", "value": "", "type": "default" },
     { "key": "exerciseId2", "value": "", "type": "default" },
     { "key": "challengeId", "value": "", "type": "default" },
+    { "key": "challengeStartDate", "value": "", "type": "default" },
+    { "key": "challengeEndDate", "value": "", "type": "default" },
     { "key": "badgeId", "value": "", "type": "default" },
-    { "key": "friendshipId", "value": "", "type": "default" },
-    { "key": "emailVerificationToken", "value": "", "type": "default" },
-    { "key": "passwordResetToken", "value": "", "type": "default" }
+    { "key": "badgeRuleId", "value": "", "type": "default" },
+    { "key": "workoutId", "value": "", "type": "default" },
+    { "key": "notificationId", "value": "", "type": "default" },
+    { "key": "friendshipId", "value": "", "type": "default" }
   ]
 }

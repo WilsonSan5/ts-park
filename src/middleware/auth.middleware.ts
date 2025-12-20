@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
+import { isTokenBlacklisted } from '../services/auth.service';
 import { JWTPayload } from '../types';
 
 /**
@@ -8,17 +9,18 @@ import { JWTPayload } from '../types';
  * Flow:
  * 1. Extract token from Authorization header (Bearer <token>)
  * 2. Verify token signature and expiration
- * 3. Add user info to req.user
- * 4. Call next() to continue to controller
+ * 3. Check if token has been blacklisted (user logged out)
+ * 4. Add user info to req.user
+ * 5. Call next() to continue to controller
  *
- * If token is invalid/missing, returns 401/403 error.
+ * If token is invalid/missing/blacklisted, returns 401/403 error.
  * SECURITY: Token must be in format "Bearer <token>"
  */
-export const authenticateToken = (
+export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Response | void => {
+): Promise<Response | void> => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -46,13 +48,22 @@ export const authenticateToken = (
     // SECURITY: Verifies signature and expiration
     const decoded = verifyToken(token) as JWTPayload;
 
+    // SECURITY: Check if token has been blacklisted (user logged out)
+    const blacklisted = await isTokenBlacklisted(token);
+    if (blacklisted) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token has been revoked. Please log in again.',
+      });
+    }
+
     // Attach user info to request for controllers to use
-    (req as any).user = decoded;
+    req.user = decoded;
 
     // Continue to next middleware/controller
     next();
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Token is invalid or expired
     return res.status(403).json({
       success: false,

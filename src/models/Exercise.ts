@@ -52,6 +52,12 @@ export class Exercise {
   @Column({ nullable: true })
   imageUrl?: string;
 
+  @Column({ default: false })
+  isDeleted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt?: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

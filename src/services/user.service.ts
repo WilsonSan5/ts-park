@@ -5,7 +5,7 @@ import { UserRole, UserStatus } from '../types';
 
 const userRepository = AppDataSource.getRepository(User);
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (): Promise<Partial<User>[]> => {
   const users = await userRepository.find({
     select: {
       id: true,
@@ -25,7 +25,7 @@ export const getAllUsers = async () => {
   return users;
 };
 
-export const getUserById = async (userId: string) => {
+export const getUserById = async (userId: string): Promise<Partial<User>> => {
   const user = await userRepository.findOne({
     where: { id: userId },
     select: {
@@ -56,7 +56,7 @@ export const updateUserProfile = async (
     lastName?: string;
     email?: string;
   }
-) => {
+): Promise<Omit<User, 'password'>> => {
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {
@@ -85,7 +85,7 @@ export const updateUserPassword = async (
   userId: string,
   currentPassword: string,
   newPassword: string
-) => {
+): Promise<{ message: string }> => {
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {
@@ -109,7 +109,7 @@ export const updateUserPassword = async (
   return { message: 'Password updated successfully' };
 };
 
-export const deleteUser = async (userId: string) => {
+export const deleteUser = async (userId: string): Promise<{ message: string }> => {
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {
@@ -122,7 +122,9 @@ export const deleteUser = async (userId: string) => {
   return { message: 'User account deactivated successfully' };
 };
 
-export const getUserStats = async (userId: string) => {
+export const getUserStats = async (
+  userId: string
+): Promise<{ userId: string; totalPoints: number; memberSince: Date }> => {
   const user = await userRepository.findOne({
     where: { id: userId },
     select: {
@@ -153,11 +155,12 @@ export const createUserWithRole = async (
   firstName: string,
   lastName: string,
   role: UserRole
-) => {
+): Promise<Omit<User, 'password'>> => {
   // Check for existing user
+  // SECURITY: Generic message to prevent email enumeration
   const existingUser = await userRepository.findOne({ where: { email } });
   if (existingUser) {
-    throw new Error('User with this email already exists');
+    throw new Error('Unable to create user. Please check the provided information.');
   }
 
   // Validate role
@@ -189,7 +192,10 @@ export const createUserWithRole = async (
  * Updates a user's role (Admin only)
  * SECURITY: This should only be called from admin-protected endpoints
  */
-export const updateUserRole = async (userId: string, newRole: UserRole) => {
+export const updateUserRole = async (
+  userId: string,
+  newRole: UserRole
+): Promise<Omit<User, 'password'>> => {
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {

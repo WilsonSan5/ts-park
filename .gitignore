@@ -30,9 +30,6 @@ coverage/
 # Misc
 *.orig
 
-.claude/*
-.serena/*
-.claudedocs/*
 *.pdf
 *.md
 !README.md  

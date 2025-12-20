@@ -1,19 +1,34 @@
 import { Request, Response } from 'express';
 import * as challengeService from '../services/challenge.service';
-import { sendSuccess, sendError, sendCreated } from '../utils/response';
-import { ChallengeType, ChallengeDifficulty, ChallengeStatus } from '../types';
+import { sendSuccess, sendCreated } from '../utils/response';
+import { asyncHandler } from '../utils/async-handler';
 
 /**
  * Create a new challenge
  * POST /api/challenges
  * Gym Owner and Super Admin only
  */
-export const createChallenge = async (
+export const createChallenge = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const {
+  const {
+    title,
+    description,
+    type,
+    difficulty,
+    objectives,
+    startDate,
+    endDate,
+    maxParticipants,
+    pointsReward,
+    isPublic,
+    gymId,
+    recommendedExerciseIds
+  } = req.body;
+
+  const challenge = await challengeService.createChallenge(
+    {
       title,
       description,
       type,
@@ -26,271 +41,229 @@ export const createChallenge = async (
       isPublic,
       gymId,
       recommendedExerciseIds
-    } = req.body;
+    },
+    req.user!.userId
+  );
 
-    // Validation
-    if (!title || !description || !type || !difficulty || !objectives || !startDate || !endDate || pointsReward === undefined || isPublic === undefined) {
-      return sendError(res, 'Missing required fields', 400);
-    }
-
-    if (!Object.values(ChallengeType).includes(type)) {
-      return sendError(res, 'Invalid challenge type', 400);
-    }
-
-    if (!Object.values(ChallengeDifficulty).includes(difficulty)) {
-      return sendError(res, 'Invalid difficulty level', 400);
-    }
-
-    if (pointsReward < 0) {
-      return sendError(res, 'Points reward must be non-negative', 400);
-    }
-
-    if (maxParticipants !== undefined && maxParticipants <= 0) {
-      return sendError(res, 'Max participants must be greater than 0', 400);
-    }
-
-    // Validate objectives
-    if (typeof objectives !== 'object') {
-      return sendError(res, 'Objectives must be an object', 400);
-    }
-
-    const challenge = await challengeService.createChallenge(
-      {
-        title,
-        description,
-        type,
-        difficulty,
-        objectives,
-        startDate,
-        endDate,
-        maxParticipants,
-        pointsReward,
-        isPublic,
-        gymId,
-        recommendedExerciseIds
-      },
-      req.user!.userId
-    );
-
-    return sendCreated(res, 'Challenge created successfully', challenge);
-  } catch (error: any) {
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendCreated(res, 'Challenge created successfully', challenge);
+});
 
 /**
  * Get all challenges with optional filters
  * GET /api/challenges
  */
-export const getAllChallenges = async (
+export const getAllChallenges = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { type, difficulty, gymId, isPublic } = req.query;
+  const { type, difficulty, gymId, isPublic } = req.query;
 
-    const filters: any = {};
-    if (type) filters.type = type as ChallengeType;
-    if (difficulty) filters.difficulty = difficulty as ChallengeDifficulty;
-    if (gymId) filters.gymId = gymId as string;
-    if (isPublic !== undefined) filters.isPublic = isPublic === 'true';
+  const filters: Record<string, unknown> = {};
+  if (type) filters.type = type as string;
+  if (difficulty) filters.difficulty = difficulty as string;
+  if (gymId) filters.gymId = gymId as string;
+  if (isPublic !== undefined) filters.isPublic = isPublic === 'true';
 
-    const challenges = await challengeService.getAllChallenges(filters);
+  const challenges = await challengeService.getAllChallenges(filters);
 
-    return sendSuccess(res, 'Challenges retrieved successfully', {
-      count: challenges.length,
-      challenges,
-    });
-  } catch (error: any) {
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendSuccess(res, 'Challenges retrieved successfully', {
+    count: challenges.length,
+    challenges,
+  });
+});
 
 /**
  * Get challenge by ID
  * GET /api/challenges/:id
  */
-export const getChallengeById = async (
+export const getChallengeById = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const challenge = await challengeService.getChallengeById(id);
+  const challenge = await challengeService.getChallengeById(id);
 
-    return sendSuccess(res, 'Challenge retrieved successfully', challenge);
-  } catch (error: any) {
-    return sendError(res, error.message, error.message === 'Challenge not found' ? 404 : 500);
-  }
-};
+  return sendSuccess(res, 'Challenge retrieved successfully', challenge);
+});
 
 /**
  * Update a challenge
  * PATCH /api/challenges/:id
  * Creator or Super Admin only
  */
-export const updateChallenge = async (
+export const updateChallenge = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
+  const { id } = req.params;
+  const updateData = req.body;
 
-    // Validate type if provided
-    if (updateData.type && !Object.values(ChallengeType).includes(updateData.type)) {
-      return sendError(res, 'Invalid challenge type', 400);
-    }
+  const challenge = await challengeService.updateChallenge(id, updateData, req.user!.userId);
 
-    // Validate difficulty if provided
-    if (updateData.difficulty && !Object.values(ChallengeDifficulty).includes(updateData.difficulty)) {
-      return sendError(res, 'Invalid difficulty level', 400);
-    }
-
-    // Validate status if provided
-    if (updateData.status && !Object.values(ChallengeStatus).includes(updateData.status)) {
-      return sendError(res, 'Invalid status', 400);
-    }
-
-    // Validate pointsReward if provided
-    if (updateData.pointsReward !== undefined && updateData.pointsReward < 0) {
-      return sendError(res, 'Points reward must be non-negative', 400);
-    }
-
-    // Validate maxParticipants if provided
-    if (updateData.maxParticipants !== undefined && updateData.maxParticipants <= 0) {
-      return sendError(res, 'Max participants must be greater than 0', 400);
-    }
-
-    const challenge = await challengeService.updateChallenge(id, updateData, req.user!.userId);
-
-    return sendSuccess(res, 'Challenge updated successfully', challenge);
-  } catch (error: any) {
-    if (error.message === 'Challenge not found') {
-      return sendError(res, error.message, 404);
-    }
-    if (error.message === 'You can only update your own challenges') {
-      return sendError(res, error.message, 403);
-    }
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendSuccess(res, 'Challenge updated successfully', challenge);
+});
 
 /**
  * Delete a challenge
  * DELETE /api/challenges/:id
  * Creator or Super Admin only
  */
-export const deleteChallenge = async (
+export const deleteChallenge = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    await challengeService.deleteChallenge(id, req.user!.userId);
+  await challengeService.deleteChallenge(id, req.user!.userId);
 
-    return sendSuccess(res, 'Challenge deleted successfully', null);
-  } catch (error: any) {
-    if (error.message === 'Challenge not found') {
-      return sendError(res, error.message, 404);
-    }
-    if (error.message === 'You can only delete your own challenges') {
-      return sendError(res, error.message, 403);
-    }
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendSuccess(res, 'Challenge deleted successfully', null);
+});
 
 /**
  * Join a challenge
  * POST /api/challenges/:id/join
  */
-export const joinChallenge = async (
+export const joinChallenge = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const participation = await challengeService.joinChallenge(id, req.user!.userId);
+  const participation = await challengeService.joinChallenge(id, req.user!.userId);
 
-    return sendCreated(res, 'Successfully joined challenge', participation);
-  } catch (error: any) {
-    if (error.message === 'Challenge not found') {
-      return sendError(res, error.message, 404);
-    }
-    if (error.message.includes('already joined') || error.message.includes('maximum participants')) {
-      return sendError(res, error.message, 400);
-    }
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendCreated(res, 'Successfully joined challenge', participation);
+});
 
 /**
  * Leave a challenge
  * POST /api/challenges/:id/leave
  */
-export const leaveChallenge = async (
+export const leaveChallenge = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const participation = await challengeService.leaveChallenge(id, req.user!.userId);
+  const participation = await challengeService.leaveChallenge(id, req.user!.userId);
 
-    return sendSuccess(res, 'Successfully left challenge', participation);
-  } catch (error: any) {
-    if (error.message === 'You are not participating in this challenge') {
-      return sendError(res, error.message, 400);
-    }
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendSuccess(res, 'Successfully left challenge', participation);
+});
 
 /**
  * Get challenge participants
  * GET /api/challenges/:id/participants
  */
-export const getChallengeParticipants = async (
+export const getChallengeParticipants = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const participants = await challengeService.getChallengeParticipants(id);
+  const participants = await challengeService.getChallengeParticipants(id);
 
-    return sendSuccess(res, 'Participants retrieved successfully', {
-      count: participants.length,
-      participants,
-    });
-  } catch (error: any) {
-    if (error.message === 'Challenge not found') {
-      return sendError(res, error.message, 404);
-    }
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendSuccess(res, 'Participants retrieved successfully', {
+    count: participants.length,
+    participants,
+  });
+});
 
 /**
  * Get user's participations
  * GET /api/challenges/my-participations
  */
-export const getUserParticipations = async (
+export const getUserParticipations = asyncHandler(async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  try {
-    const participations = await challengeService.getUserParticipations(req.user!.userId);
+  const participations = await challengeService.getUserParticipations(req.user!.userId);
 
-    return sendSuccess(res, 'Participations retrieved successfully', {
-      count: participations.length,
-      participations,
-    });
-  } catch (error: any) {
-    return sendError(res, error.message, 500);
-  }
-};
+  return sendSuccess(res, 'Participations retrieved successfully', {
+    count: participations.length,
+    participations,
+  });
+});
+
+/**
+ * Start a challenge (activate a draft challenge)
+ * POST /api/challenges/:id/start
+ * Creator or Super Admin only
+ */
+export const startChallenge = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { id } = req.params;
+
+  const challenge = await challengeService.startChallenge(id, req.user!.userId);
+
+  return sendSuccess(res, 'Challenge activated successfully', challenge);
+});
+
+/**
+ * Cancel a challenge
+ * POST /api/challenges/:id/cancel
+ * Creator or Super Admin only
+ */
+export const cancelChallenge = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { id } = req.params;
+
+  const result = await challengeService.cancelChallenge(id, req.user!.userId);
+
+  return sendSuccess(res, 'Challenge cancelled successfully. All participants have been notified.', {
+    challenge: result.challenge,
+    participantsAffected: result.participantsAffected,
+  });
+});
+
+/**
+ * Complete a challenge (finalize results and award points)
+ * POST /api/challenges/:id/complete
+ * Creator or Super Admin only
+ */
+export const completeChallenge = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { id } = req.params;
+
+  const result = await challengeService.completeChallenge(id, req.user!.userId);
+
+  return sendSuccess(res, 'Challenge completed successfully. Participant results have been finalized.', {
+    challenge: result.challenge,
+    statistics: result.statistics,
+  });
+});
+
+/**
+ * Get all deleted challenges (for recovery)
+ * GET /api/challenges/deleted
+ * Super Admin only
+ */
+export const getDeletedChallenges = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const challenges = await challengeService.getDeletedChallenges(req.user!.userId);
+
+  return sendSuccess(res, 'Deleted challenges retrieved successfully', { challenges });
+});
+
+/**
+ * Restore a soft-deleted challenge
+ * POST /api/challenges/:id/restore
+ * Creator or Super Admin only
+ */
+export const restoreChallenge = asyncHandler(async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { id } = req.params;
+
+  const challenge = await challengeService.restoreChallenge(id, req.user!.userId);
+
+  return sendSuccess(res, 'Challenge restored successfully', { challenge });
+});

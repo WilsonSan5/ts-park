@@ -38,6 +38,13 @@ docker-compose exec app npm run seed  # Seed database
 - **Swagger Docs**: http://localhost:3000/api/docs
 - **Adminer (DB UI)**: http://localhost:8080
 
+**Import Postman Collection (for API testing):**
+
+1. Open Postman
+2. Click **Import** (top-left)
+3. Drag & drop or browse to: `postman/tspark-api-collection.json`
+4. Start testing with the pre-configured requests!
+
 ---
 
 ## Getting Started with Docker
@@ -63,12 +70,12 @@ docker-compose exec app npm run seed
 
 ### Test Users (created by seed)
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@tspark.com | SuperAdmin123! | Super Admin |
-| gymowner@tspark.com | GymOwner123! | Gym Owner |
-| client1@tspark.com | Client123! | Client |
-| client2@tspark.com | Client123! | Client |
+| Email               | Password       | Role        |
+| ------------------- | -------------- | ----------- |
+| admin@tspark.com    | SuperAdmin123! | Super Admin |
+| gymowner@tspark.com | GymOwner123!   | Gym Owner   |
+| client1@tspark.com  | Client123!     | Client      |
+| client2@tspark.com  | Client123!     | Client      |
 
 ### Essential Docker Commands
 
@@ -78,6 +85,26 @@ docker-compose logs -f app       # View logs
 docker-compose down              # Stop services
 docker-compose down -v           # Stop and reset database
 ```
+
+### Import Postman Collection (Recommended for Testing)
+
+For comprehensive API testing, import our pre-configured Postman collection:
+
+1. Open **Postman**
+2. Click **Import** (top-left corner)
+3. Select the file: `postman/tspark-api-collection.json`
+4. The collection includes:
+   - All endpoints pre-configured with variables
+   - Automatic token management (login once, tokens auto-saved)
+   - Sequential test flow (folders 0-9 in order)
+   - Pre-request scripts for dynamic data
+
+**Why Postman over Swagger?**
+
+- Automatic JWT token handling between requests
+- Collection variables for IDs (gym, challenge, workout, etc.)
+- Run entire test flows with Collection Runner
+- Better for testing complete user journeys
 
 ---
 
@@ -186,12 +213,12 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 ## Available Commands
 
-| Command              | Description                              |
-| -------------------- | ---------------------------------------- |
-| `npm run dev`        | Start development server with hot-reload |
-| `npm run build`      | Compile TypeScript to JavaScript         |
-| `npm run seed`       | Seed database with initial data          |
-| `npm run migration:run` | Run pending migrations                |
+| Command                 | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `npm run dev`           | Start development server with hot-reload |
+| `npm run build`         | Compile TypeScript to JavaScript         |
+| `npm run seed`          | Seed database with initial data          |
+| `npm run migration:run` | Run pending migrations                   |
 
 **Inside Docker:** Prefix any command with `docker-compose exec app`
 
@@ -588,6 +615,7 @@ PATCH /api/users/:id/role
 ### Adminer (Database UI)
 
 Access at http://localhost:8080 with:
+
 - **Server**: postgres | **Username**: postgres | **Password**: postgres | **Database**: tspark_db
 
 ### Entity Relationships
@@ -604,14 +632,14 @@ User ─── owns ──→ Gym ──→ Challenge ──→ Participation
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Containers not starting | `docker-compose logs -f` to check errors |
-| Database connection errors | `docker-compose down -v` then restart |
-| 401 Unauthorized | Token expired - login again |
-| 403 Forbidden | Check your user role permissions |
+| Issue                        | Solution                                  |
+| ---------------------------- | ----------------------------------------- |
+| Containers not starting      | `docker-compose logs -f` to check errors  |
+| Database connection errors   | `docker-compose down -v` then restart     |
+| 401 Unauthorized             | Token expired - login again               |
+| 403 Forbidden                | Check your user role permissions          |
 | Gym cannot create challenges | Gym must be APPROVED by Super Admin first |
-| Cannot join challenge | Challenge must be ACTIVE (not DRAFT) |
+| Cannot join challenge        | Challenge must be ACTIVE (not DRAFT)      |
 
 ---
 

@@ -32,4 +32,5 @@ coverage/
 
 *.pdf
 *.md
-!README.md  
+!README.md
+!READMEFR.md 

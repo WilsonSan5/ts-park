@@ -25,67 +25,44 @@ A RESTful API for managing gyms, fitness challenges, workouts, badges, and socia
 ## Quick Start
 
 ```bash
-# Clone and start with Docker (recommended)
 git clone <repository-url>
 cd ts-park
-docker-compose up -d --build
-
-# Wait for services to start, then seed the database
-docker-compose exec app npm run seed
+npm install                        # Install dependencies first
+docker-compose up -d --build       # Start all services
+docker-compose exec app npm run seed  # Seed database
 ```
 
 **Access Points:**
 
-- API: http://localhost:3000
-- Swagger Docs: http://localhost:3000/api/docs
-- Health Check: http://localhost:3000/health
-- Adminer (Database UI): http://localhost:8080
+- **API**: http://localhost:3000
+- **Swagger Docs**: http://localhost:3000/api/docs
+- **Adminer (DB UI)**: http://localhost:8080
 
 ---
 
 ## Getting Started with Docker
 
-Docker is the recommended way to run TSPark. It provides a consistent environment with PostgreSQL and all dependencies pre-configured.
+Docker is the recommended way to run TSPark.
 
 ### Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
 
-### Step 1: Build and Start All Services
+### Setup
 
 ```bash
-# Build and start in detached mode (runs in background)
+# 1. Install dependencies first (required before Docker build)
+npm install
+
+# 2. Build and start all services
 docker-compose up -d --build
-```
 
-This command:
-
-- Builds the Node.js application image
-- Starts PostgreSQL 16 database
-- Starts the Express API with hot-reload
-- Starts Adminer for database management
-
-### Step 2: Verify Services are Running
-
-```bash
-# Check container status
-docker-compose ps
-
-# Expected output:
-# NAME             STATUS
-# tspark-app       Up (healthy)
-# tspark-db        Up (healthy)
-# tspark-adminer   Up
-```
-
-### Step 3: Seed the Database
-
-```bash
-# Run database migrations and seed initial data
+# 3. Seed the database with test data
 docker-compose exec app npm run seed
 ```
 
-This creates test users:
+### Test Users (created by seed)
+
 | Email | Password | Role |
 |-------|----------|------|
 | admin@tspark.com | SuperAdmin123! | Super Admin |
@@ -93,41 +70,13 @@ This creates test users:
 | client1@tspark.com | Client123! | Client |
 | client2@tspark.com | Client123! | Client |
 
-### Step 4: Test the API
+### Essential Docker Commands
 
 ```bash
-# Health check
-curl http://localhost:3000/health
-
-# Login as Super Admin
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@tspark.com", "password": "SuperAdmin123!"}'
-```
-
-### Docker Commands Reference
-
-```bash
-# Start services
-docker-compose up -d --build
-
-# View real-time logs
-docker-compose logs -f app
-
-# Stop all services
-docker-compose down
-
-# Stop and remove volumes (resets database)
-docker-compose down -v
-
-# Rebuild after package.json changes
-docker-compose up -d --build
-
-# Access container shell
-docker-compose exec app sh
-
-# Run commands inside container
-docker-compose exec app npm run migration:run
+docker-compose up -d --build     # Start services
+docker-compose logs -f app       # View logs
+docker-compose down              # Stop services
+docker-compose down -v           # Stop and reset database
 ```
 
 ---
@@ -237,36 +186,14 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 ## Available Commands
 
-### Development
+| Command              | Description                              |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Start development server with hot-reload |
+| `npm run build`      | Compile TypeScript to JavaScript         |
+| `npm run seed`       | Seed database with initial data          |
+| `npm run migration:run` | Run pending migrations                |
 
-| Command          | Description                              |
-| ---------------- | ---------------------------------------- |
-| `npm run dev`    | Start development server with hot-reload |
-| `npm run build`  | Compile TypeScript to JavaScript         |
-| `npm start`      | Run production build                     |
-| `npm run lint`   | Run ESLint for code quality              |
-| `npm run format` | Format code with Prettier                |
-
-### Database
-
-| Command                                             | Description                            |
-| --------------------------------------------------- | -------------------------------------- |
-| `npm run migration:generate -- src/migrations/Name` | Generate migration from entity changes |
-| `npm run migration:run`                             | Run pending migrations                 |
-| `npm run migration:revert`                          | Revert last migration                  |
-| `npm run seed`                                      | Seed database with initial data        |
-
-### Docker Equivalents
-
-```bash
-# Run any npm command inside Docker container
-docker-compose exec app npm run <command>
-
-# Examples:
-docker-compose exec app npm run seed
-docker-compose exec app npm run migration:run
-docker-compose exec app npm run lint
-```
+**Inside Docker:** Prefix any command with `docker-compose exec app`
 
 ---
 
@@ -658,113 +585,33 @@ PATCH /api/users/:id/role
 
 ## Database Management
 
-### Accessing the Database UI (Adminer)
+### Adminer (Database UI)
 
-1. Navigate to: http://localhost:8080
-2. Login with:
-   - **System**: PostgreSQL
-   - **Server**: postgres (or localhost for local dev)
-   - **Username**: postgres
-   - **Password**: postgres
-   - **Database**: tspark_db
-
-### Common Database Operations
-
-```bash
-# Inside Docker container
-docker-compose exec app npm run migration:run
-docker-compose exec app npm run migration:revert
-docker-compose exec app npm run seed
-
-# Connect directly to PostgreSQL
-docker-compose exec postgres psql -U postgres -d tspark_db
-```
+Access at http://localhost:8080 with:
+- **Server**: postgres | **Username**: postgres | **Password**: postgres | **Database**: tspark_db
 
 ### Entity Relationships
 
-```
-User ──┬── owns ──────→ Gym
-       ├── creates ───→ Exercise (Super Admin)
-       ├── creates ───→ Challenge (via Gym)
-       ├── joins ─────→ Participation ──→ Challenge
-       ├── logs ──────→ Workout
-       ├── earns ─────→ UserBadge ──→ Badge
-       └── friends ───→ Friendship ──→ User
-
-Challenge ←──── recommendedExercises ────→ Exercise (many-to-many)
-Badge ←──── rules ────→ BadgeRule
+```text
+User ─── owns ──→ Gym ──→ Challenge ──→ Participation
+  │                            │
+  ├── logs ──→ Workout         └── recommendedExercises ──→ Exercise
+  ├── earns ──→ UserBadge ──→ Badge ──→ BadgeRule
+  └── friends ──→ Friendship
 ```
 
 ---
 
 ## Troubleshooting
 
-### Container Issues
-
-**Containers not starting:**
-
-```bash
-# Check logs
-docker-compose logs -f
-
-# Restart services
-docker-compose down && docker-compose up -d --build
-```
-
-**Database connection errors:**
-
-```bash
-# Wait for PostgreSQL to be ready (healthcheck)
-docker-compose ps  # Ensure tspark-db shows "healthy"
-
-# Reset database
-docker-compose down -v
-docker-compose up -d --build
-docker-compose exec app npm run seed
-```
-
-### API Issues
-
-**401 Unauthorized:**
-
-- Token expired - login again
-- Token not included in Authorization header
-- Format: `Bearer <token>`
-
-**403 Forbidden:**
-
-- Role doesn't have permission for this action
-- Check User Roles section
-
-**Gym cannot create challenges:**
-
-- Gym must be APPROVED first
-- Super Admin must run `/gyms/:id/approve`
-
-**Cannot join challenge:**
-
-- Challenge must be ACTIVE (not DRAFT)
-- Current date must be within challenge date range
-- Cannot already be a participant
-
-### Hot Reload Not Working
-
-```bash
-# Restart the app container
-docker-compose restart app
-
-# Or rebuild
-docker-compose up -d --build
-```
-
-### Port Conflicts
-
-```bash
-# Find and kill process on port 3000
-lsof -ti:3000 | xargs kill -9
-
-# Or change ports in docker-compose.yml
-```
+| Issue | Solution |
+|-------|----------|
+| Containers not starting | `docker-compose logs -f` to check errors |
+| Database connection errors | `docker-compose down -v` then restart |
+| 401 Unauthorized | Token expired - login again |
+| 403 Forbidden | Check your user role permissions |
+| Gym cannot create challenges | Gym must be APPROVED by Super Admin first |
+| Cannot join challenge | Challenge must be ACTIVE (not DRAFT) |
 
 ---
 
@@ -781,7 +628,6 @@ lsof -ti:3000 | xargs kill -9
 | **Password Hashing** | bcryptjs                         |
 | **Validation**       | class-validator                  |
 | **Email**            | Nodemailer                       |
-| **Logging**          | Winston                          |
 | **Security**         | Helmet, CORS, express-rate-limit |
 | **Documentation**    | Swagger/OpenAPI                  |
 | **Containerization** | Docker & Docker Compose          |
